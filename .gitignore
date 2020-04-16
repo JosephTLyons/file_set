@@ -1,4 +1,7 @@
 /target
 Cargo.lock
+# Normally, you'd just use "".DS_Store" to ignore all occurences, but we're using .DS_Store as a
+# testing items in the test_files directory
 /.DS_Store
+/src/.DS_Store
 .idea

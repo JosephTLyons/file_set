@@ -173,7 +173,7 @@ mod tests {
 
     #[test]
     fn to_vec_test() {
-        let path_to_folder: &Path = Path::new("./src/test_files");
+        let path_to_folder: &Path = Path::new("./test_files");
         let all_files = FileSet::new(path_to_folder);
 
         let file_vec = all_files.to_vec().unwrap();
@@ -192,7 +192,7 @@ mod tests {
 
     #[test]
     fn visibility_type_filter_test() {
-        let path_to_folder: &Path = Path::new("./src/test_files");
+        let path_to_folder: &Path = Path::new("./test_files");
         let mut all_files = FileSet::new(path_to_folder);
 
         let hidden_files = all_files
@@ -221,7 +221,7 @@ mod tests {
 
     #[test]
     fn directory_entry_type_filter_test() {
-        let path_to_folder: &Path = Path::new("./src/test_files");
+        let path_to_folder: &Path = Path::new("./test_files");
         let mut all_files = FileSet::new(path_to_folder);
 
         let directories = all_files

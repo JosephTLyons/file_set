@@ -33,12 +33,12 @@ impl<T: Ord + PartialEq + Clone> OrderableSet<T> {
     fn intersection_difference_base(
         &self,
         other: &OrderableSet<T>,
-        should_computer_intersection: bool,
+        should_compute_intersection: bool,
     ) -> OrderableSet<T> {
         let mut orderable_set = OrderableSet::<T>::new();
 
         for item in &self.items {
-            if other.items.contains(&item) == should_computer_intersection {
+            if other.items.contains(&item) == should_compute_intersection {
                 orderable_set.items.push(item.clone());
             }
         }

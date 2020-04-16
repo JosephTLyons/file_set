@@ -54,16 +54,13 @@ impl FileSet {
     pub fn filter(&mut self, filer: Filter) -> FileSet {
         FileSet {
             orderable_set: match filer {
-                Filter::Item(item) => self.filter_by_directory_entry_type(item),
-                Filter::Visibility(visibility) => self.filter_by_visibility_type(visibility),
+                Filter::Item(item) => self.filter_by_item(item),
+                Filter::Visibility(visibility) => self.filter_by_visibility(visibility),
             },
         }
     }
 
-    fn filter_by_directory_entry_type(
-        &mut self,
-        directory_entry_type: Item,
-    ) -> OrderableSet<PathBuf> {
+    fn filter_by_item(&mut self, directory_entry_type: Item) -> OrderableSet<PathBuf> {
         let mut orderable_set: OrderableSet<PathBuf> = OrderableSet::new();
 
         match directory_entry_type {
@@ -95,10 +92,7 @@ impl FileSet {
         orderable_set
     }
 
-    pub fn filter_by_visibility_type(
-        &mut self,
-        visibility_type: Visibility,
-    ) -> OrderableSet<PathBuf> {
+    pub fn filter_by_visibility(&mut self, visibility_type: Visibility) -> OrderableSet<PathBuf> {
         let mut orderable_set: OrderableSet<PathBuf> = OrderableSet::new();
 
         match visibility_type {

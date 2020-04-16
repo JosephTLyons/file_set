@@ -17,7 +17,6 @@ pub enum Item {
 }
 
 pub enum OrderBy {
-    DirectoryEntryType,
     Extension,
     Name,
     Size,

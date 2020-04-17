@@ -52,6 +52,15 @@ impl FileSet {
         FileSet { orderable_set }
     }
 
+    pub fn exclude(&mut self, filter: Filter) -> FileSet {
+        let items_to_exclude: FileSet = self.filter(filter);
+        FileSet {
+            orderable_set: self
+                .orderable_set
+                .difference(&items_to_exclude.orderable_set),
+        }
+    }
+
     pub fn filter(&mut self, filer: Filter) -> FileSet {
         FileSet {
             orderable_set: match filer {
@@ -139,9 +148,6 @@ impl FileSet {
 
         orderable_set
     }
-
-    // pub fn exclude(&mut self, filter: Filter) -> FileSet {
-    // }
 
     pub fn reverse(&mut self) -> FileSet {
         let mut orderable_set = self.orderable_set.clone();
@@ -242,6 +248,45 @@ mod tests {
 
         assert_eq!(symlinks.len(), 1);
         assert!(symlinks.contains(&directory_location.join(".symlink_to_gitkeep")));
+    }
+
+    #[test]
+    fn exclude_test_1() {
+        let path_to_folder: &Path = Path::new("./test_files");
+        let mut all_files = FileSet::new(path_to_folder);
+
+        let all_but_symlinks = all_files
+            .exclude(Filter::Item(ItemFilter::Symlink))
+            .to_vec();
+        let directory_location = all_but_symlinks[0].parent().unwrap();
+
+        assert_eq!(all_but_symlinks.len(), 8);
+        assert!(all_but_symlinks.contains(&directory_location.join(".DS_Store")));
+        assert!(all_but_symlinks.contains(&directory_location.join(".hidden_file_1.txt")));
+        assert!(all_but_symlinks.contains(&directory_location.join(".hidden_file_2")));
+        assert!(all_but_symlinks.contains(&directory_location.join("cat.doc")));
+        assert!(all_but_symlinks.contains(&directory_location.join("directory_1")));
+        assert!(all_but_symlinks.contains(&directory_location.join("directory_2")));
+        assert!(all_but_symlinks.contains(&directory_location.join("dog.txt")));
+        assert!(all_but_symlinks.contains(&directory_location.join("video.mov")));
+    }
+
+    #[test]
+    fn exclude_test_2() {
+        let path_to_folder: &Path = Path::new("./test_files");
+        let mut all_files = FileSet::new(path_to_folder);
+
+        let all_visible_files = all_files
+            .exclude(Filter::Visibility(VisibilityFilter::Hidden))
+            .to_vec();
+        let directory_location = all_visible_files[0].parent().unwrap();
+
+        assert_eq!(all_visible_files.len(), 5);
+        assert!(all_visible_files.contains(&directory_location.join("cat.doc")));
+        assert!(all_visible_files.contains(&directory_location.join("directory_1")));
+        assert!(all_visible_files.contains(&directory_location.join("directory_2")));
+        assert!(all_visible_files.contains(&directory_location.join("dog.txt")));
+        assert!(all_visible_files.contains(&directory_location.join("video.mov")));
     }
 }
 

@@ -30,6 +30,11 @@ impl<T: Ord + PartialEq + Clone> OrderableSet<T> {
         self.intersection_difference_base(other, false)
     }
 
+    pub fn reverse(&mut self) -> OrderableSet<T> {
+        self.items.reverse();
+        OrderableSet { items: self.items.clone() }
+    }
+
     fn intersection_difference_base(
         &self,
         other: &OrderableSet<T>,
@@ -48,10 +53,6 @@ impl<T: Ord + PartialEq + Clone> OrderableSet<T> {
 
     pub fn is_disjoint(&self, other: &OrderableSet<T>) -> bool {
         self.intersection(&other).to_vec().is_empty()
-    }
-
-    pub fn reverse(&mut self) {
-        self.items.reverse()
     }
 
     pub fn to_vec(&self) -> Vec<T> {

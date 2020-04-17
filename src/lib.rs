@@ -113,6 +113,7 @@ impl FileSet {
 
         match visibility_filter {
             VisibilityFilter::Hidden => {
+                // Try to use iterators here
                 // let x: Vec<PathBuf> = self
                 //     .orderable_set
                 //     .to_vec()

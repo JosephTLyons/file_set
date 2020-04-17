@@ -7,6 +7,7 @@ use orderable_set::OrderableSet;
 
 pub enum Filter {
     Item(ItemFilter),
+    // Size(SizeFilter),
     Visibility(VisibilityFilter),
 }
 
@@ -163,6 +164,8 @@ impl FileSet {
 mod tests {
     use super::*;
 
+    // It is possible this test can be deleted, since to_vec() is being tested implicitly in the
+    // other tests
     #[test]
     fn to_vec_test() {
         let path_to_folder: &Path = Path::new("./test_files");

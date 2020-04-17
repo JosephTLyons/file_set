@@ -17,13 +17,6 @@ pub enum ItemFilter {
     Symlink,
 }
 
-pub enum OrderByFilter {
-    // Just sort all of them ascending, then the reverse can be applied
-    Extension,
-    Name,
-    Size,
-}
-
 pub enum SizeFilter {
     Bytes,
     Kilobytes,
@@ -35,6 +28,13 @@ pub enum SizeFilter {
 pub enum VisibilityFilter {
     Hidden,
     Visible,
+}
+
+pub enum OrderBy {
+    // Just sort all of them ascending, then the reverse can be applied
+    Extension,
+    Name,
+    Size,
 }
 
 pub struct FileSet {

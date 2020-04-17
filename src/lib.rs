@@ -61,9 +61,9 @@ impl FileSet {
         }
     }
 
-    pub fn filter(&mut self, filer: Filter) -> FileSet {
+    pub fn filter(&mut self, filter: Filter) -> FileSet {
         FileSet {
-            orderable_set: match filer {
+            orderable_set: match filter {
                 Filter::Item(item) => self.filter_by_item(item),
                 Filter::Visibility(visibility) => self.filter_by_visibility(visibility),
             },

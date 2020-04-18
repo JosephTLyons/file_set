@@ -2,8 +2,8 @@ use std::convert::TryFrom;
 use std::fs::read_dir;
 use std::path::{Path, PathBuf};
 
-mod orderable_set;
-use orderable_set::OrderableSet;
+mod ordered_set;
+use ordered_set::OrderedSet;
 
 pub enum Filter {
     Item(ItemFilter),
@@ -43,35 +43,35 @@ pub struct FileSet {
 
 impl FileSet {
     pub fn new(directory: &Path) -> FileSet {
-        let mut orderable_set: OrderableSet<PathBuf> = OrderableSet::new();
+        let mut ordered_set: OrderedSet<PathBuf> = OrderedSet::new();
 
         for directory_entry in read_dir(&directory).unwrap() {
-            orderable_set.push(directory_entry.unwrap().path()).unwrap();
+            ordered_set.push(directory_entry.unwrap().path()).unwrap();
         }
 
-        FileSet { orderable_set }
+        FileSet { ordered_set }
     }
 
     pub fn exclude(&mut self, filter: Filter) -> FileSet {
         let items_to_exclude: FileSet = self.filter(filter);
         FileSet {
-            orderable_set: self
-                .orderable_set
-                .difference(&items_to_exclude.orderable_set),
+            ordered_set: self
+                .ordered_set
+                .difference(&items_to_exclude.ordered_set),
         }
     }
 
     pub fn filter(&mut self, filter: Filter) -> FileSet {
         FileSet {
-            orderable_set: match filter {
+            ordered_set: match filter {
                 Filter::Item(item) => self.filter_by_item(item),
                 Filter::Visibility(visibility) => self.filter_by_visibility(visibility),
             },
         }
     }
 
-    fn filter_by_item(&mut self, item_filter: ItemFilter) -> OrderableSet<PathBuf> {
-        let vec_iter = self.orderable_set.to_vec().into_iter();
+    fn filter_by_item(&mut self, item_filter: ItemFilter) -> OrderedSet<PathBuf> {
+        let vec_iter = self.ordered_set.to_vec().into_iter();
 
         // TODO: Make a macro for x.symlink_metadata().unwrap().file_type() ?
         // TODO: Try to remove factor out collect()
@@ -87,20 +87,20 @@ impl FileSet {
                 .collect(),
         };
 
-        OrderableSet::try_from(filtered_path_vec).unwrap()
+        OrderedSet::try_from(filtered_path_vec).unwrap()
     }
 
     pub fn filter_by_visibility(
         &mut self,
         visibility_filter: VisibilityFilter,
-    ) -> OrderableSet<PathBuf> {
+    ) -> OrderedSet<PathBuf> {
         let should_find_visible_files: bool = match visibility_filter {
             VisibilityFilter::Hidden => false,
             VisibilityFilter::Visible => true,
         };
 
         let filtered_path_vec: Vec<PathBuf> = self
-            .orderable_set
+            .ordered_set
             .to_vec()
             .into_iter()
             .filter(|x| {
@@ -109,17 +109,17 @@ impl FileSet {
             })
             .collect();
 
-        OrderableSet::try_from(filtered_path_vec).unwrap()
+        OrderedSet::try_from(filtered_path_vec).unwrap()
     }
 
     pub fn reverse(&mut self) -> FileSet {
-        let mut orderable_set = self.orderable_set.clone();
-        orderable_set.reverse();
-        FileSet { orderable_set }
+        let mut ordered_set = self.ordered_set.clone();
+        ordered_set.reverse();
+        FileSet { ordered_set }
     }
 
     pub fn to_vec(&self) -> Vec<PathBuf> {
-        self.orderable_set.to_vec().into_iter().map(|x| x).collect()
+        self.ordered_set.to_vec().into_iter().map(|x| x).collect()
     }
 }
 

@@ -47,6 +47,7 @@ impl<T: Ord + PartialEq + Clone> OrderedSet<T> {
 
     pub fn reverse(&mut self) -> OrderedSet<T> {
         self.items.reverse();
+
         OrderedSet {
             items: self.items.clone(),
         }

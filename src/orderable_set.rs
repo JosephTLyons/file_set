@@ -32,7 +32,9 @@ impl<T: Ord + PartialEq + Clone> OrderableSet<T> {
 
     pub fn reverse(&mut self) -> OrderableSet<T> {
         self.items.reverse();
-        OrderableSet { items: self.items.clone() }
+        OrderableSet {
+            items: self.items.clone(),
+        }
     }
 
     fn intersection_difference_base(

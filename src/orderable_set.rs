@@ -30,13 +30,6 @@ impl<T: Ord + PartialEq + Clone> OrderableSet<T> {
         self.intersection_difference_base(other, false)
     }
 
-    pub fn reverse(&mut self) -> OrderableSet<T> {
-        self.items.reverse();
-        OrderableSet {
-            items: self.items.clone(),
-        }
-    }
-
     fn intersection_difference_base(
         &self,
         other: &OrderableSet<T>,
@@ -49,6 +42,13 @@ impl<T: Ord + PartialEq + Clone> OrderableSet<T> {
                 .into_iter()
                 .filter(|x| other.items.contains(x) == should_compute_intersection)
                 .collect(),
+        }
+    }
+
+    pub fn reverse(&mut self) -> OrderableSet<T> {
+        self.items.reverse();
+        OrderableSet {
+            items: self.items.clone(),
         }
     }
 

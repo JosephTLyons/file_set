@@ -18,16 +18,16 @@ pub enum SizeFilter {
     Terabytes,
 }
 
+pub enum VisibilityFilter {
+    Hidden,
+    Visible,
+}
+
 pub enum Comparison {
     LessThan,
     LessThanOrEqual,
     GreaterThan,
     GreaterThanOrEqual,
-}
-
-pub enum VisibilityFilter {
-    Hidden,
-    Visible,
 }
 
 pub enum OrderBy {

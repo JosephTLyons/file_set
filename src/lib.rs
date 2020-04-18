@@ -119,13 +119,7 @@ impl FileSet {
     }
 
     pub fn to_vec(&self) -> Vec<PathBuf> {
-        let mut paths: Vec<PathBuf> = Vec::new();
-
-        for path in &self.orderable_set.to_vec() {
-            paths.push(path.to_path_buf());
-        }
-
-        paths
+        self.orderable_set.to_vec().into_iter().map(|x| x).collect()
     }
 }
 

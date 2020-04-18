@@ -73,6 +73,8 @@ impl FileSet {
     fn filter_by_item(&mut self, item_filter: ItemFilter) -> OrderableSet<PathBuf> {
         let vec_iter = self.orderable_set.to_vec().into_iter();
 
+        // TODO: Make a macro for x.symlink_metadata().unwrap().file_type() ?
+        // TODO: Try to remove factor out collect()
         let filtered_path_vec: Vec<PathBuf> = match item_filter {
             ItemFilter::Directory => vec_iter
                 .filter(|x| x.symlink_metadata().unwrap().file_type().is_dir())

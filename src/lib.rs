@@ -1,7 +1,6 @@
 use std::convert::TryFrom;
 use std::fs::read_dir;
-use std::path::Path;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 mod orderable_set;
 use orderable_set::OrderableSet;

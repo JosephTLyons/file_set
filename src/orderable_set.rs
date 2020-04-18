@@ -40,15 +40,14 @@ impl<T: Ord + PartialEq + Clone> OrderableSet<T> {
         other: &OrderableSet<T>,
         should_compute_intersection: bool,
     ) -> OrderableSet<T> {
-        let mut orderable_set = OrderableSet::<T>::new();
-
-        for item in &self.items {
-            if other.items.contains(&item) == should_compute_intersection {
-                orderable_set.items.push(item.clone());
-            }
+        OrderableSet {
+            items: self
+                .items
+                .clone()
+                .into_iter()
+                .filter(|x| other.items.contains(x) == should_compute_intersection)
+                .collect(),
         }
-
-        orderable_set
     }
 
     pub fn is_disjoint(&self, other: &OrderableSet<T>) -> bool {

@@ -1,3 +1,4 @@
+use std::convert::TryFrom;
 use std::fs::read_dir;
 use std::path::Path;
 use std::path::PathBuf;
@@ -71,38 +72,28 @@ impl FileSet {
     }
 
     fn filter_by_item(&mut self, item_filter: ItemFilter) -> OrderableSet<PathBuf> {
-        let mut orderable_set: OrderableSet<PathBuf> = OrderableSet::new();
+        let filtered_path_vec: Vec<PathBuf> = match item_filter {
+            ItemFilter::Directory => self
+                .orderable_set
+                .to_vec()
+                .into_iter()
+                .filter(|x| x.symlink_metadata().unwrap().file_type().is_dir())
+                .collect(),
+            ItemFilter::File => self
+                .orderable_set
+                .to_vec()
+                .into_iter()
+                .filter(|x| x.symlink_metadata().unwrap().file_type().is_file())
+                .collect(),
+            ItemFilter::Symlink => self
+                .orderable_set
+                .to_vec()
+                .into_iter()
+                .filter(|x| x.symlink_metadata().unwrap().file_type().is_symlink())
+                .collect(),
+        };
 
-        match item_filter {
-            ItemFilter::Directory => {
-                for path_buf in self.orderable_set.to_vec() {
-                    if path_buf.metadata().unwrap().file_type().is_dir() {
-                        orderable_set.push(path_buf).unwrap()
-                    }
-                }
-            }
-            ItemFilter::File => {
-                for path_buf in self.orderable_set.to_vec() {
-                    if path_buf.symlink_metadata().unwrap().file_type().is_file() {
-                        orderable_set.push(path_buf).unwrap()
-                    }
-                }
-            }
-            ItemFilter::Symlink => {
-                for path_buf in self.orderable_set.to_vec() {
-                    if path_buf
-                        .symlink_metadata()
-                        .unwrap()
-                        .file_type()
-                        .is_symlink()
-                    {
-                        orderable_set.push(path_buf).unwrap()
-                    }
-                }
-            }
-        }
-
-        orderable_set
+        OrderableSet::try_from(filtered_path_vec).unwrap()
     }
 
     pub fn filter_by_visibility(

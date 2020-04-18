@@ -109,45 +109,22 @@ impl FileSet {
         &mut self,
         visibility_filter: VisibilityFilter,
     ) -> OrderableSet<PathBuf> {
-        let mut orderable_set: OrderableSet<PathBuf> = OrderableSet::new();
+        let should_find_visible_files: bool = match visibility_filter {
+            VisibilityFilter::Hidden => false,
+            VisibilityFilter::Visible => true,
+        };
 
-        match visibility_filter {
-            VisibilityFilter::Hidden => {
-                // Try to use iterators here
-                // let x: Vec<PathBuf> = self
-                //     .orderable_set
-                //     .to_vec()
-                //     .into_iter()
-                //     .filter(|&x| x.to_string_lossy().starts_with('.'))
-                //     .collect();
-                // let y = OrderableSet::try_from(x);
+        let filtered_path_vec: Vec<PathBuf> = self
+            .orderable_set
+            .to_vec()
+            .into_iter()
+            .filter(|x| {
+                should_find_visible_files
+                    != x.file_name().unwrap().to_string_lossy().starts_with('.')
+            })
+            .collect();
 
-                for path_buf in self.orderable_set.to_vec() {
-                    if path_buf
-                        .file_name()
-                        .unwrap()
-                        .to_string_lossy()
-                        .starts_with('.')
-                    {
-                        orderable_set.push(path_buf).unwrap();
-                    }
-                }
-            }
-            VisibilityFilter::Visible => {
-                for path_buf in self.orderable_set.to_vec() {
-                    if !path_buf
-                        .file_name()
-                        .unwrap()
-                        .to_string_lossy()
-                        .starts_with('.')
-                    {
-                        orderable_set.push(path_buf).unwrap();
-                    }
-                }
-            }
-        }
-
-        orderable_set
+        OrderableSet::try_from(filtered_path_vec).unwrap()
     }
 
     pub fn reverse(&mut self) -> FileSet {

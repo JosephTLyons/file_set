@@ -2,40 +2,11 @@ use std::convert::TryFrom;
 use std::fs::read_dir;
 use std::path::{Path, PathBuf};
 
+mod enums;
+pub use enums::{Comparison, Filter, ItemFilter, OrderBy, SizeFilter, VisibilityFilter};
+
 mod ordered_set;
 use ordered_set::OrderedSet;
-
-pub enum Filter {
-    Item(ItemFilter),
-    // Size(SizeFilter),
-    Visibility(VisibilityFilter),
-}
-
-pub enum ItemFilter {
-    Directory,
-    File,
-    Symlink,
-}
-
-pub enum SizeFilter {
-    Bytes,
-    Kilobytes,
-    Megatbytes,
-    Gigabytes,
-    Terabytes,
-}
-
-pub enum VisibilityFilter {
-    Hidden,
-    Visible,
-}
-
-pub enum OrderBy {
-    // Just sort all of them ascending, then the reverse can be applied
-    Extension,
-    Name,
-    Size,
-}
 
 pub struct FileSet {
     orderable_set: OrderableSet<PathBuf>,

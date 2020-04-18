@@ -71,23 +71,16 @@ impl FileSet {
     }
 
     fn filter_by_item(&mut self, item_filter: ItemFilter) -> OrderableSet<PathBuf> {
+        let vec_iter = self.orderable_set.to_vec().into_iter();
+
         let filtered_path_vec: Vec<PathBuf> = match item_filter {
-            ItemFilter::Directory => self
-                .orderable_set
-                .to_vec()
-                .into_iter()
+            ItemFilter::Directory => vec_iter
                 .filter(|x| x.symlink_metadata().unwrap().file_type().is_dir())
                 .collect(),
-            ItemFilter::File => self
-                .orderable_set
-                .to_vec()
-                .into_iter()
+            ItemFilter::File => vec_iter
                 .filter(|x| x.symlink_metadata().unwrap().file_type().is_file())
                 .collect(),
-            ItemFilter::Symlink => self
-                .orderable_set
-                .to_vec()
-                .into_iter()
+            ItemFilter::Symlink => vec_iter
                 .filter(|x| x.symlink_metadata().unwrap().file_type().is_symlink())
                 .collect(),
         };

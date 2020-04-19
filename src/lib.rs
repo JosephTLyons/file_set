@@ -17,7 +17,7 @@ impl FileSet {
             index_set: read_dir(&directory)
                 .unwrap()
                 .map(|x| x.unwrap().path())
-                .collect::<IndexSet<_>>(),
+                .collect::<IndexSet<PathBuf>>(),
         }
     }
 
@@ -29,7 +29,7 @@ impl FileSet {
                 .index_set
                 .difference(&items_to_exclude.index_set)
                 .cloned()
-                .collect::<IndexSet<_>>(),
+                .collect::<IndexSet<PathBuf>>(),
         }
     }
 
@@ -69,7 +69,7 @@ fn filter_by_item(&mut self, item_filter: ItemFilter) -> IndexSet<PathBuf> {
                 should_find_visible_files
                     != x.file_name().unwrap().to_string_lossy().starts_with('.')
             })
-            .collect::<IndexSet<_>>()
+            .collect::<IndexSet<PathBuf>>()
     }
 
     pub fn reverse(&mut self) -> FileSet {
@@ -79,7 +79,7 @@ fn filter_by_item(&mut self, item_filter: ItemFilter) -> IndexSet<PathBuf> {
                 .clone()
                 .into_iter()
                 .rev()
-                .collect::<IndexSet<_>>(),
+                .collect::<IndexSet<PathBuf>>(),
         }
     }
 

@@ -20,7 +20,7 @@ impl FileSet {
         }
     }
 
-    pub fn exclude(&mut self, filter: Filter) -> FileSet {
+    pub fn exclude(&self, filter: Filter) -> FileSet {
         let items_to_exclude: FileSet = self.filter(filter);
 
         FileSet {
@@ -32,7 +32,7 @@ impl FileSet {
         }
     }
 
-    pub fn filter(&mut self, filter: Filter) -> FileSet {
+    pub fn filter(&self, filter: Filter) -> FileSet {
         FileSet {
             index_set: match filter {
                 Filter::Item(item) => self.filter_by_item(item),
@@ -41,7 +41,7 @@ impl FileSet {
         }
     }
 
-    fn filter_by_item(&mut self, item_filter: ItemFilter) -> IndexSet<PathBuf> {
+    fn filter_by_item(&self, item_filter: ItemFilter) -> IndexSet<PathBuf> {
         let item_type_function = match item_filter {
             ItemFilter::Directory => FileType::is_dir,
             ItemFilter::File => FileType::is_file,
@@ -55,7 +55,7 @@ impl FileSet {
             .collect::<IndexSet<PathBuf>>()
     }
 
-    fn filter_by_visibility(&mut self, visibility_filter: VisibilityFilter) -> IndexSet<PathBuf> {
+    fn filter_by_visibility(&self, visibility_filter: VisibilityFilter) -> IndexSet<PathBuf> {
         let should_find_visible_files: bool = match visibility_filter {
             VisibilityFilter::Hidden => false,
             VisibilityFilter::Visible => true,
@@ -72,26 +72,29 @@ impl FileSet {
     }
 
     // Try to refactor match arms like filter_by_item()
-    pub fn order_by(mut self, order_by: OrderBy) -> FileSet {
+    pub fn order_by(&self, order_by: OrderBy) -> FileSet {
+        let mut index_set: IndexSet<PathBuf> = self.index_set.clone();
+
         FileSet {
             index_set: match order_by {
                 OrderBy::Extension => {
-                    self.index_set
-                        .sort_by(|a, b| Ord::cmp(&a.extension(), &b.extension()));
-                    self.index_set
+                    index_set.sort_by(|a, b| Ord::cmp(&a.extension(), &b.extension()));
+                    index_set
                 }
-                OrderBy::Item => self.index_set,
+                OrderBy::Item => {
+                    index_set
+                }
                 OrderBy::Name => {
-                    self.index_set
+                    index_set
                         .sort_by(|a, b| Ord::cmp(&a.file_name(), &b.file_name()));
-                    self.index_set
+                    index_set
                 }
                 OrderBy::Size => self.index_set,
             },
         }
     }
 
-    pub fn reverse(&mut self) -> FileSet {
+    pub fn reverse(&self) -> FileSet {
         FileSet {
             index_set: self
                 .index_set

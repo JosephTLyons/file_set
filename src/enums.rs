@@ -1,6 +1,5 @@
 pub enum Filter {
     Item(ItemFilter),
-    // Permission
     // Size(SizeFilter),
     Visibility(VisibilityFilter),
 }
@@ -10,10 +9,6 @@ pub enum ItemFilter {
     File,
     Symlink,
 }
-
-// pub enum PermissionFilter {
-//
-// }
 
 pub enum SizeFilter {
     Bytes,
@@ -41,5 +36,4 @@ pub enum OrderBy {
     Item,
     Name,
     Size,
-    Permission
 }

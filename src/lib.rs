@@ -96,7 +96,6 @@ impl FileSet {
             }
             OrderBy::Name => index_set.sort_by(|a, b| Ord::cmp(&a.file_name(), &b.file_name())),
             OrderBy::Size => {}
-            OrderBy::Permission => {}
         }
 
         FileSet { index_set }

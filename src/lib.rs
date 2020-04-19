@@ -41,23 +41,19 @@ impl FileSet {
         }
     }
 
-    fn filter_by_item(&mut self, item_filter: ItemFilter) -> IndexSet<PathBuf> {
-        let vec_iter = self.index_set.clone().into_iter();
+fn filter_by_item(&mut self, item_filter: ItemFilter) -> IndexSet<PathBuf> {
+    let item_type_function = match item_filter {
+        ItemFilter::Directory => FileType::is_dir,
+        ItemFilter::File => FileType::is_file,
+        ItemFilter::Symlink => FileType::is_symlink,
+    };
 
-        // TODO: Make a macro for x.symlink_metadata().unwrap().file_type() ?
-        // TODO: Try to remove factor out collect()
-        match item_filter {
-            ItemFilter::Directory => vec_iter
-                .filter(|x| x.symlink_metadata().unwrap().file_type().is_dir())
-                .collect::<IndexSet<_>>(),
-            ItemFilter::File => vec_iter
-                .filter(|x| x.symlink_metadata().unwrap().file_type().is_file())
-                .collect::<IndexSet<_>>(),
-            ItemFilter::Symlink => vec_iter
-                .filter(|x| x.symlink_metadata().unwrap().file_type().is_symlink())
-                .collect::<IndexSet<_>>(),
-        }
-    }
+    self.index_set
+        .clone()
+        .into_iter()
+        .filter(|x: &PathBuf| item_type_function(&x.symlink_metadata().unwrap().file_type()))
+        .collect::<IndexSet<PathBuf>>()
+}
 
     fn filter_by_visibility(&mut self, visibility_filter: VisibilityFilter) -> IndexSet<PathBuf> {
         let should_find_visible_files: bool = match visibility_filter {

@@ -59,10 +59,7 @@ impl FileSet {
         }
     }
 
-    fn filter_by_visibility(
-        &mut self,
-        visibility_filter: VisibilityFilter,
-    ) -> IndexSet<PathBuf> {
+    fn filter_by_visibility(&mut self, visibility_filter: VisibilityFilter) -> IndexSet<PathBuf> {
         let should_find_visible_files: bool = match visibility_filter {
             VisibilityFilter::Hidden => false,
             VisibilityFilter::Visible => true,

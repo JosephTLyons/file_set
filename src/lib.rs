@@ -115,9 +115,7 @@ mod tests {
     #[test]
     fn to_vec_test() {
         let path_to_folder: &Path = Path::new("./test_files");
-        let all_files = FileSet::new(path_to_folder);
-
-        let file_vec = all_files.to_vec();
+        let file_vec = FileSet::new(path_to_folder).to_vec();
         let directory_location = file_vec[0].parent().unwrap();
 
         assert_eq!(file_vec.len(), 9);
@@ -164,7 +162,6 @@ mod tests {
     fn item_filter_test() {
         let path_to_folder: &Path = Path::new("./test_files");
         let all_files = FileSet::new(path_to_folder);
-
         let directories = all_files
             .filter(Filter::Item(ItemFilter::Directory))
             .to_vec();
@@ -193,30 +190,26 @@ mod tests {
     #[test]
     fn exclude_test_1() {
         let path_to_folder: &Path = Path::new("./test_files");
-        let all_files = FileSet::new(path_to_folder);
-
-        let all_but_symlinks = all_files
+        let all_items_but_symlinks = FileSet::new(path_to_folder)
             .exclude(Filter::Item(ItemFilter::Symlink))
             .to_vec();
-        let directory_location = all_but_symlinks[0].parent().unwrap();
+        let directory_location = all_items_but_symlinks[0].parent().unwrap();
 
-        assert_eq!(all_but_symlinks.len(), 8);
-        assert!(all_but_symlinks.contains(&directory_location.join(".DS_Store")));
-        assert!(all_but_symlinks.contains(&directory_location.join(".hidden_file_1.txt")));
-        assert!(all_but_symlinks.contains(&directory_location.join(".hidden_file_2")));
-        assert!(all_but_symlinks.contains(&directory_location.join("cat.doc")));
-        assert!(all_but_symlinks.contains(&directory_location.join("directory_1")));
-        assert!(all_but_symlinks.contains(&directory_location.join("directory_2")));
-        assert!(all_but_symlinks.contains(&directory_location.join("dog.txt")));
-        assert!(all_but_symlinks.contains(&directory_location.join("video.mov")));
+        assert_eq!(all_items_but_symlinks.len(), 8);
+        assert!(all_items_but_symlinks.contains(&directory_location.join(".DS_Store")));
+        assert!(all_items_but_symlinks.contains(&directory_location.join(".hidden_file_1.txt")));
+        assert!(all_items_but_symlinks.contains(&directory_location.join(".hidden_file_2")));
+        assert!(all_items_but_symlinks.contains(&directory_location.join("cat.doc")));
+        assert!(all_items_but_symlinks.contains(&directory_location.join("directory_1")));
+        assert!(all_items_but_symlinks.contains(&directory_location.join("directory_2")));
+        assert!(all_items_but_symlinks.contains(&directory_location.join("dog.txt")));
+        assert!(all_items_but_symlinks.contains(&directory_location.join("video.mov")));
     }
 
     #[test]
     fn exclude_test_2() {
         let path_to_folder: &Path = Path::new("./test_files");
-        let all_files = FileSet::new(path_to_folder);
-
-        let all_visible_files = all_files
+        let all_visible_files = FileSet::new(path_to_folder)
             .exclude(Filter::Visibility(VisibilityFilter::Hidden))
             .to_vec();
         let directory_location = all_visible_files[0].parent().unwrap();
@@ -232,9 +225,9 @@ mod tests {
     #[test]
     fn order_by_extension_test() {
         let path_to_folder: &Path = Path::new("./test_files");
-        let all_files = FileSet::new(path_to_folder);
-
-        let items_ordered_by_extension = all_files.order_by(OrderBy::Extension).to_vec();
+        let items_ordered_by_extension = FileSet::new(path_to_folder)
+            .order_by(OrderBy::Extension)
+            .to_vec();
 
         assert_eq!(items_ordered_by_extension.len(), 9);
         assert!(items_ordered_by_extension[0].extension().is_none());
@@ -267,9 +260,9 @@ mod tests {
     #[test]
     fn order_by_name_test() {
         let path_to_folder: &Path = Path::new("./test_files");
-        let all_files = FileSet::new(path_to_folder);
-
-        let items_ordered_by_extension = all_files.order_by(OrderBy::Name).to_vec();
+        let items_ordered_by_extension = FileSet::new(path_to_folder)
+            .order_by(OrderBy::Name)
+            .to_vec();
 
         assert_eq!(items_ordered_by_extension.len(), 9);
         assert_eq!(
@@ -313,9 +306,10 @@ mod tests {
     #[test]
     fn reverse_test() {
         let path_to_folder: &Path = Path::new("./test_files");
-        let all_files = FileSet::new(path_to_folder);
-
-        let items_ordered_by_extension = all_files.order_by(OrderBy::Name).reverse().to_vec();
+        let items_ordered_by_extension = FileSet::new(path_to_folder)
+            .order_by(OrderBy::Name)
+            .reverse()
+            .to_vec();
 
         assert_eq!(items_ordered_by_extension.len(), 9);
         assert_eq!(

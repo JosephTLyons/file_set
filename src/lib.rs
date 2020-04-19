@@ -42,19 +42,19 @@ impl FileSet {
         }
     }
 
-fn filter_by_item(&mut self, item_filter: ItemFilter) -> IndexSet<PathBuf> {
-    let item_type_function = match item_filter {
-        ItemFilter::Directory => FileType::is_dir,
-        ItemFilter::File => FileType::is_file,
-        ItemFilter::Symlink => FileType::is_symlink,
-    };
+    fn filter_by_item(&mut self, item_filter: ItemFilter) -> IndexSet<PathBuf> {
+        let item_type_function = match item_filter {
+            ItemFilter::Directory => FileType::is_dir,
+            ItemFilter::File => FileType::is_file,
+            ItemFilter::Symlink => FileType::is_symlink,
+        };
 
-    self.index_set
-        .clone()
-        .into_iter()
-        .filter(|x: &PathBuf| item_type_function(&x.symlink_metadata().unwrap().file_type()))
-        .collect::<IndexSet<PathBuf>>()
-}
+        self.index_set
+            .clone()
+            .into_iter()
+            .filter(|x: &PathBuf| item_type_function(&x.symlink_metadata().unwrap().file_type()))
+            .collect::<IndexSet<PathBuf>>()
+    }
 
     fn filter_by_visibility(&mut self, visibility_filter: VisibilityFilter) -> IndexSet<PathBuf> {
         let should_find_visible_files: bool = match visibility_filter {

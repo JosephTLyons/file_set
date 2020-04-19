@@ -40,6 +40,6 @@ pub enum OrderBy {
     Extension,
     Item,
     Name,
-    // Size,
-    // Permission
+    Size,
+    Permission
 }

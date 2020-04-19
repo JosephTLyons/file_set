@@ -75,19 +75,19 @@ impl FileSet {
     pub fn order_by(&self, order_by: OrderBy) -> FileSet {
         let mut index_set: IndexSet<PathBuf> = self.index_set.clone();
 
-        FileSet {
-            index_set: match order_by {
-                OrderBy::Extension => {
-                    index_set.sort_by(|a, b| Ord::cmp(&a.extension(), &b.extension()));
-                    index_set
-                }
-                OrderBy::Item => index_set,
-                OrderBy::Name => {
-                    index_set.sort_by(|a, b| Ord::cmp(&a.file_name(), &b.file_name()));
-                    index_set
-                } // OrderBy::Size => index_set,
-            },
+        match order_by {
+            OrderBy::Extension => {
+                index_set.sort_by(|a, b| Ord::cmp(&a.extension(), &b.extension()))
+            }
+            OrderBy::Item => {}
+            OrderBy::Name => {
+                index_set.sort_by(|a, b| Ord::cmp(&a.file_name(), &b.file_name()))
+            }
+            OrderBy::Size => {}
+            OrderBy::Permission => {}
         }
+
+        FileSet { index_set }
     }
 
     pub fn reverse(&self) -> FileSet {

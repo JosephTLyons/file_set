@@ -264,6 +264,25 @@ mod tests {
             .to_string_lossy()
             .ends_with("txt"));
     }
+
+    #[test]
+    fn order_by_name_test() {
+        let path_to_folder: &Path = Path::new("./test_files");
+        let all_files = FileSet::new(path_to_folder);
+
+        let items_ordered_by_extension = all_files.order_by(OrderBy::Name).to_vec();
+
+        assert_eq!(items_ordered_by_extension.len(), 9);
+        assert_eq!(items_ordered_by_extension[0].file_name().unwrap(), ".DS_Store");
+        assert_eq!(items_ordered_by_extension[1].file_name().unwrap(), ".hidden_file_1.txt");
+        assert_eq!(items_ordered_by_extension[2].file_name().unwrap(), ".hidden_file_2");
+        assert_eq!(items_ordered_by_extension[3].file_name().unwrap(), ".symlink_to_gitkeep");
+        assert_eq!(items_ordered_by_extension[4].file_name().unwrap(), "cat.doc");
+        assert_eq!(items_ordered_by_extension[5].file_name().unwrap(), "directory_1");
+        assert_eq!(items_ordered_by_extension[6].file_name().unwrap(), "directory_2");
+        assert_eq!(items_ordered_by_extension[7].file_name().unwrap(), "dog.txt");
+        assert_eq!(items_ordered_by_extension[8].file_name().unwrap(), "video.mov");
+    }
 }
 
 // Ordering

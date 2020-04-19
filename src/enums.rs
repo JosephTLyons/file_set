@@ -31,7 +31,6 @@ pub enum Comparison {
 }
 
 pub enum OrderBy {
-    // Just sort all of them ascending, then the reverse can be applied
     Extension,
     Item,
     Name,

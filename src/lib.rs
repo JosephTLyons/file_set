@@ -72,6 +72,8 @@ impl FileSet {
     }
 
     // Try to refactor match arms like filter_by_item()
+    // Make each match arm a function, if necessary
+    // Is there a better way to handle combining the items other than union()?
     pub fn order_by(&self, order_by: OrderBy) -> FileSet {
         let mut index_set: IndexSet<PathBuf> = self.index_set.clone();
 

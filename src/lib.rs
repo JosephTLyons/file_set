@@ -76,12 +76,14 @@ impl FileSet {
         FileSet {
             index_set: match order_by {
                 OrderBy::Extension => {
-                    self.index_set.sort_by(|a, b| Ord::cmp(&a.extension(), &b.extension()));
+                    self.index_set
+                        .sort_by(|a, b| Ord::cmp(&a.extension(), &b.extension()));
                     self.index_set
                 }
                 OrderBy::Item => self.index_set,
                 OrderBy::Name => {
-                    self.index_set.sort_by(|a, b| Ord::cmp(&a.file_name(), &b.file_name()));
+                    self.index_set
+                        .sort_by(|a, b| Ord::cmp(&a.file_name(), &b.file_name()));
                     self.index_set
                 }
                 OrderBy::Size => self.index_set,

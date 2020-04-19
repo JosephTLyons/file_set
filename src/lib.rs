@@ -117,6 +117,14 @@ impl FileSet {
     pub fn to_vec(&self) -> Vec<PathBuf> {
         self.index_set.clone().into_iter().map(|x| x).collect()
     }
+
+    pub fn len(&self) -> usize {
+        self.index_set.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.index_set.is_empty()
+    }
 }
 
 #[cfg(test)]
@@ -375,5 +383,20 @@ mod tests {
             items_ordered_by_extension[8].file_name().unwrap(),
             ".DS_Store"
         );
+    }
+
+    #[test]
+    fn len_test() {
+        let items = FileSet::new(PathBuf::from("./test_files"));
+        assert_eq!(items.len(), 9);
+    }
+
+    #[test]
+    fn is_empty_test() {
+        let no_items = FileSet::new(PathBuf::from("./test_files"))
+            .filter(Filter::Visibility(VisibilityFilter::Hidden))
+            .filter(Filter::Item(ItemFilter::Directory));
+
+        assert!(no_items.is_empty());
     }
 }

@@ -81,15 +81,11 @@ impl FileSet {
                     index_set.sort_by(|a, b| Ord::cmp(&a.extension(), &b.extension()));
                     index_set
                 }
-                OrderBy::Item => {
-                    index_set
-                }
+                OrderBy::Item => index_set,
                 OrderBy::Name => {
+                    index_set.sort_by(|a, b| Ord::cmp(&a.file_name(), &b.file_name()));
                     index_set
-                        .sort_by(|a, b| Ord::cmp(&a.file_name(), &b.file_name()));
-                    index_set
-                }
-                // OrderBy::Size => index_set,
+                } // OrderBy::Size => index_set,
             },
         }
     }
@@ -276,15 +272,42 @@ mod tests {
         let items_ordered_by_extension = all_files.order_by(OrderBy::Name).to_vec();
 
         assert_eq!(items_ordered_by_extension.len(), 9);
-        assert_eq!(items_ordered_by_extension[0].file_name().unwrap(), ".DS_Store");
-        assert_eq!(items_ordered_by_extension[1].file_name().unwrap(), ".hidden_file_1.txt");
-        assert_eq!(items_ordered_by_extension[2].file_name().unwrap(), ".hidden_file_2");
-        assert_eq!(items_ordered_by_extension[3].file_name().unwrap(), ".symlink_to_gitkeep");
-        assert_eq!(items_ordered_by_extension[4].file_name().unwrap(), "cat.doc");
-        assert_eq!(items_ordered_by_extension[5].file_name().unwrap(), "directory_1");
-        assert_eq!(items_ordered_by_extension[6].file_name().unwrap(), "directory_2");
-        assert_eq!(items_ordered_by_extension[7].file_name().unwrap(), "dog.txt");
-        assert_eq!(items_ordered_by_extension[8].file_name().unwrap(), "video.mov");
+        assert_eq!(
+            items_ordered_by_extension[0].file_name().unwrap(),
+            ".DS_Store"
+        );
+        assert_eq!(
+            items_ordered_by_extension[1].file_name().unwrap(),
+            ".hidden_file_1.txt"
+        );
+        assert_eq!(
+            items_ordered_by_extension[2].file_name().unwrap(),
+            ".hidden_file_2"
+        );
+        assert_eq!(
+            items_ordered_by_extension[3].file_name().unwrap(),
+            ".symlink_to_gitkeep"
+        );
+        assert_eq!(
+            items_ordered_by_extension[4].file_name().unwrap(),
+            "cat.doc"
+        );
+        assert_eq!(
+            items_ordered_by_extension[5].file_name().unwrap(),
+            "directory_1"
+        );
+        assert_eq!(
+            items_ordered_by_extension[6].file_name().unwrap(),
+            "directory_2"
+        );
+        assert_eq!(
+            items_ordered_by_extension[7].file_name().unwrap(),
+            "dog.txt"
+        );
+        assert_eq!(
+            items_ordered_by_extension[8].file_name().unwrap(),
+            "video.mov"
+        );
     }
 
     #[test]
@@ -295,15 +318,42 @@ mod tests {
         let items_ordered_by_extension = all_files.order_by(OrderBy::Name).reverse().to_vec();
 
         assert_eq!(items_ordered_by_extension.len(), 9);
-        assert_eq!(items_ordered_by_extension[0].file_name().unwrap(), "video.mov");
-        assert_eq!(items_ordered_by_extension[1].file_name().unwrap(), "dog.txt");
-        assert_eq!(items_ordered_by_extension[2].file_name().unwrap(), "directory_2");
-        assert_eq!(items_ordered_by_extension[3].file_name().unwrap(), "directory_1");
-        assert_eq!(items_ordered_by_extension[4].file_name().unwrap(), "cat.doc");
-        assert_eq!(items_ordered_by_extension[5].file_name().unwrap(), ".symlink_to_gitkeep");
-        assert_eq!(items_ordered_by_extension[6].file_name().unwrap(), ".hidden_file_2");
-        assert_eq!(items_ordered_by_extension[7].file_name().unwrap(), ".hidden_file_1.txt");
-        assert_eq!(items_ordered_by_extension[8].file_name().unwrap(), ".DS_Store");
+        assert_eq!(
+            items_ordered_by_extension[0].file_name().unwrap(),
+            "video.mov"
+        );
+        assert_eq!(
+            items_ordered_by_extension[1].file_name().unwrap(),
+            "dog.txt"
+        );
+        assert_eq!(
+            items_ordered_by_extension[2].file_name().unwrap(),
+            "directory_2"
+        );
+        assert_eq!(
+            items_ordered_by_extension[3].file_name().unwrap(),
+            "directory_1"
+        );
+        assert_eq!(
+            items_ordered_by_extension[4].file_name().unwrap(),
+            "cat.doc"
+        );
+        assert_eq!(
+            items_ordered_by_extension[5].file_name().unwrap(),
+            ".symlink_to_gitkeep"
+        );
+        assert_eq!(
+            items_ordered_by_extension[6].file_name().unwrap(),
+            ".hidden_file_2"
+        );
+        assert_eq!(
+            items_ordered_by_extension[7].file_name().unwrap(),
+            ".hidden_file_1.txt"
+        );
+        assert_eq!(
+            items_ordered_by_extension[8].file_name().unwrap(),
+            ".DS_Store"
+        );
     }
 }
 

@@ -12,13 +12,12 @@ pub struct FileSet {
 
 impl FileSet {
     pub fn new(directory: &Path) -> FileSet {
-        let mut index_set: IndexSet<PathBuf> = IndexSet::new();
-
-        for directory_entry in read_dir(&directory).unwrap() {
-            index_set.insert(directory_entry.unwrap().path());
+        FileSet {
+            index_set: read_dir(&directory)
+                .unwrap()
+                .map(|x| x.unwrap().path())
+                .collect::<IndexSet<_>>(),
         }
-
-        FileSet { index_set }
     }
 
     pub fn exclude(&mut self, filter: Filter) -> FileSet {

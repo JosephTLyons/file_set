@@ -2,95 +2,97 @@ use std::convert::TryFrom;
 use std::fs::read_dir;
 use std::path::{Path, PathBuf};
 
+use indexmap::IndexSet;
+
 mod enums;
 pub use enums::{Comparison, Filter, ItemFilter, OrderBy, SizeFilter, VisibilityFilter};
 
-mod ordered_set;
-use ordered_set::OrderedSet;
-
 pub struct FileSet {
-    orderable_set: OrderableSet<PathBuf>,
+    index_set: IndexSet<PathBuf>,
 }
 
 impl FileSet {
     pub fn new(directory: &Path) -> FileSet {
-        let mut ordered_set: OrderedSet<PathBuf> = OrderedSet::new();
+        let mut index_set: IndexSet<PathBuf> = IndexSet::new();
 
         for directory_entry in read_dir(&directory).unwrap() {
-            ordered_set.push(directory_entry.unwrap().path()).unwrap();
+            index_set.insert(directory_entry.unwrap().path());
         }
 
-        FileSet { ordered_set }
+        FileSet { index_set }
     }
 
     pub fn exclude(&mut self, filter: Filter) -> FileSet {
         let items_to_exclude: FileSet = self.filter(filter);
+
         FileSet {
-            ordered_set: self
-                .ordered_set
-                .difference(&items_to_exclude.ordered_set),
+            index_set: self
+                .index_set
+                .difference(&items_to_exclude.index_set)
+                .cloned()
+                .collect::<IndexSet<_>>(),
         }
     }
 
     pub fn filter(&mut self, filter: Filter) -> FileSet {
         FileSet {
-            ordered_set: match filter {
+            index_set: match filter {
                 Filter::Item(item) => self.filter_by_item(item),
                 Filter::Visibility(visibility) => self.filter_by_visibility(visibility),
             },
         }
     }
 
-    fn filter_by_item(&mut self, item_filter: ItemFilter) -> OrderedSet<PathBuf> {
-        let vec_iter = self.ordered_set.to_vec().into_iter();
+    fn filter_by_item(&mut self, item_filter: ItemFilter) -> IndexSet<PathBuf> {
+        let vec_iter = self.index_set.clone().into_iter();
 
         // TODO: Make a macro for x.symlink_metadata().unwrap().file_type() ?
         // TODO: Try to remove factor out collect()
-        let filtered_path_vec: Vec<PathBuf> = match item_filter {
+        match item_filter {
             ItemFilter::Directory => vec_iter
                 .filter(|x| x.symlink_metadata().unwrap().file_type().is_dir())
-                .collect(),
+                .collect::<IndexSet<_>>(),
             ItemFilter::File => vec_iter
                 .filter(|x| x.symlink_metadata().unwrap().file_type().is_file())
-                .collect(),
+                .collect::<IndexSet<_>>(),
             ItemFilter::Symlink => vec_iter
                 .filter(|x| x.symlink_metadata().unwrap().file_type().is_symlink())
-                .collect(),
-        };
-
-        OrderedSet::try_from(filtered_path_vec).unwrap()
+                .collect::<IndexSet<_>>(),
+        }
     }
 
     pub fn filter_by_visibility(
         &mut self,
         visibility_filter: VisibilityFilter,
-    ) -> OrderedSet<PathBuf> {
+    ) -> IndexSet<PathBuf> {
         let should_find_visible_files: bool = match visibility_filter {
             VisibilityFilter::Hidden => false,
             VisibilityFilter::Visible => true,
         };
 
-        let filtered_path_vec: Vec<PathBuf> = self
-            .ordered_set
-            .to_vec()
+        self.index_set
+            .clone()
             .into_iter()
             .filter(|x| {
                 should_find_visible_files
                     != x.file_name().unwrap().to_string_lossy().starts_with('.')
             })
-            .collect();
-
-        OrderedSet::try_from(filtered_path_vec).unwrap()
+            .collect::<IndexSet<_>>()
     }
 
     pub fn reverse(&mut self) -> FileSet {
-        let mut ordered_set = self.ordered_set.clone();
-        ordered_set.reverse();
-        FileSet { ordered_set }
+        FileSet {
+            index_set: self
+                .index_set
+                .clone()
+                .into_iter()
+                .rev()
+                .collect::<IndexSet<_>>(),
+        }
     }
 
     pub fn to_vec(&self) -> Vec<PathBuf> {
-        self.ordered_set.to_vec().into_iter().map(|x| x).collect()
+        self.index_set.clone().into_iter().map(|x| x).collect()
     }
 }
 

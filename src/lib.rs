@@ -1,4 +1,5 @@
 use std::fs::read_dir;
+use std::fs::FileType;
 use std::path::{Path, PathBuf};
 
 use indexmap::IndexSet;

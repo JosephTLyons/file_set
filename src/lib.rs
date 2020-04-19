@@ -135,7 +135,7 @@ mod tests {
     #[test]
     fn visibility_filter_test() {
         let path_to_folder: &Path = Path::new("./test_files");
-        let mut all_files = FileSet::new(path_to_folder);
+        let all_files = FileSet::new(path_to_folder);
 
         let hidden_files = all_files
             .filter(Filter::Visibility(VisibilityFilter::Hidden))
@@ -163,7 +163,7 @@ mod tests {
     #[test]
     fn item_filter_test() {
         let path_to_folder: &Path = Path::new("./test_files");
-        let mut all_files = FileSet::new(path_to_folder);
+        let all_files = FileSet::new(path_to_folder);
 
         let directories = all_files
             .filter(Filter::Item(ItemFilter::Directory))
@@ -193,7 +193,7 @@ mod tests {
     #[test]
     fn exclude_test_1() {
         let path_to_folder: &Path = Path::new("./test_files");
-        let mut all_files = FileSet::new(path_to_folder);
+        let all_files = FileSet::new(path_to_folder);
 
         let all_but_symlinks = all_files
             .exclude(Filter::Item(ItemFilter::Symlink))
@@ -214,7 +214,7 @@ mod tests {
     #[test]
     fn exclude_test_2() {
         let path_to_folder: &Path = Path::new("./test_files");
-        let mut all_files = FileSet::new(path_to_folder);
+        let all_files = FileSet::new(path_to_folder);
 
         let all_visible_files = all_files
             .exclude(Filter::Visibility(VisibilityFilter::Hidden))

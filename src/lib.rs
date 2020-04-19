@@ -356,7 +356,3 @@ mod tests {
         );
     }
 }
-
-// Ordering
-// Size (greater than / less than)
-// Sort test / reverse test / excluding

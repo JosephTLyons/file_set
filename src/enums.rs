@@ -35,5 +35,5 @@ pub enum OrderBy {
     Extension,
     Item,
     Name,
-    Size,
+    // Size,
 }

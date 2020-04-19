@@ -89,7 +89,7 @@ impl FileSet {
                         .sort_by(|a, b| Ord::cmp(&a.file_name(), &b.file_name()));
                     index_set
                 }
-                OrderBy::Size => self.index_set,
+                // OrderBy::Size => index_set,
             },
         }
     }

@@ -60,7 +60,7 @@ impl FileSet {
         }
     }
 
-    pub fn filter_by_visibility(
+    fn filter_by_visibility(
         &mut self,
         visibility_filter: VisibilityFilter,
     ) -> IndexSet<PathBuf> {

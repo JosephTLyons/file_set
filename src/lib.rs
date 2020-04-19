@@ -71,6 +71,24 @@ impl FileSet {
             .collect::<IndexSet<PathBuf>>()
     }
 
+    // Try to refactor match arms like filter_by_item()
+    pub fn order_by(mut self, order_by: OrderBy) -> FileSet {
+        FileSet {
+            index_set: match order_by {
+                OrderBy::Extension => {
+                    self.index_set.sort_by(|a, b| Ord::cmp(&a.extension(), &b.extension()));
+                    self.index_set
+                }
+                OrderBy::Item => self.index_set,
+                OrderBy::Name => {
+                    self.index_set.sort_by(|a, b| Ord::cmp(&a.file_name(), &b.file_name()));
+                    self.index_set
+                }
+                OrderBy::Size => self.index_set,
+            },
+        }
+    }
+
     pub fn reverse(&mut self) -> FileSet {
         FileSet {
             index_set: self
@@ -208,6 +226,41 @@ mod tests {
         assert!(all_visible_files.contains(&directory_location.join("directory_2")));
         assert!(all_visible_files.contains(&directory_location.join("dog.txt")));
         assert!(all_visible_files.contains(&directory_location.join("video.mov")));
+    }
+
+    #[test]
+    fn order_by_extension_test() {
+        let path_to_folder: &Path = Path::new("./test_files");
+        let all_files = FileSet::new(path_to_folder);
+
+        let items_ordered_by_extension = all_files.order_by(OrderBy::Extension).to_vec();
+
+        assert_eq!(items_ordered_by_extension.len(), 9);
+        assert!(items_ordered_by_extension[0].extension().is_none());
+        assert!(items_ordered_by_extension[1].extension().is_none());
+        assert!(items_ordered_by_extension[2].extension().is_none());
+        assert!(items_ordered_by_extension[3].extension().is_none());
+        assert!(items_ordered_by_extension[4].extension().is_none());
+        assert!(items_ordered_by_extension[5]
+            .extension()
+            .unwrap()
+            .to_string_lossy()
+            .ends_with("doc"));
+        assert!(items_ordered_by_extension[6]
+            .extension()
+            .unwrap()
+            .to_string_lossy()
+            .ends_with("mov"));
+        assert!(items_ordered_by_extension[7]
+            .extension()
+            .unwrap()
+            .to_string_lossy()
+            .ends_with("txt"));
+        assert!(items_ordered_by_extension[8]
+            .extension()
+            .unwrap()
+            .to_string_lossy()
+            .ends_with("txt"));
     }
 }
 

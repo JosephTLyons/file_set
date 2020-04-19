@@ -79,7 +79,21 @@ impl FileSet {
             OrderBy::Extension => {
                 index_set.sort_by(|a, b| Ord::cmp(&a.extension(), &b.extension()))
             }
-            OrderBy::Item => {}
+            OrderBy::Item => {
+                let directories = self.filter(Filter::Item(ItemFilter::Directory));
+                let files = self.filter(Filter::Item(ItemFilter::File));
+                let symlinks = self.filter(Filter::Item(ItemFilter::Symlink));
+
+                index_set = directories
+                    .index_set
+                    .union(&files.index_set)
+                    .cloned()
+                    .collect::<IndexSet<PathBuf>>();
+                index_set = index_set
+                    .union(&symlinks.index_set)
+                    .cloned()
+                    .collect::<IndexSet<PathBuf>>();
+            }
             OrderBy::Name => index_set.sort_by(|a, b| Ord::cmp(&a.file_name(), &b.file_name())),
             OrderBy::Size => {}
             OrderBy::Permission => {}
@@ -247,6 +261,28 @@ mod tests {
             .unwrap()
             .to_string_lossy()
             .ends_with("txt"));
+    }
+
+    #[test]
+    fn order_by_item_test() {
+        let items_ordered_by_extension = FileSet::new(PathBuf::from("./test_files"))
+            .order_by(OrderBy::Item)
+            .to_vec();
+
+        assert_eq!(items_ordered_by_extension.len(), 9);
+        assert!(items_ordered_by_extension[0].is_dir());
+        assert!(items_ordered_by_extension[1].is_dir());
+        assert!(items_ordered_by_extension[2].is_file());
+        assert!(items_ordered_by_extension[3].is_file());
+        assert!(items_ordered_by_extension[4].is_file());
+        assert!(items_ordered_by_extension[5].is_file());
+        assert!(items_ordered_by_extension[6].is_file());
+        assert!(items_ordered_by_extension[7].is_file());
+        assert!(items_ordered_by_extension[8]
+            .symlink_metadata()
+            .unwrap()
+            .file_type()
+            .is_symlink());
     }
 
     #[test]

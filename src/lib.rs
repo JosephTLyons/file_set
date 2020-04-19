@@ -1,5 +1,5 @@
 use std::fs::{read_dir, FileType};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use indexmap::IndexSet;
 
@@ -11,7 +11,7 @@ pub struct FileSet {
 }
 
 impl FileSet {
-    pub fn new(directory: &Path) -> FileSet {
+    pub fn new(directory: PathBuf) -> FileSet {
         FileSet {
             index_set: read_dir(&directory)
                 .unwrap()
@@ -80,9 +80,7 @@ impl FileSet {
                 index_set.sort_by(|a, b| Ord::cmp(&a.extension(), &b.extension()))
             }
             OrderBy::Item => {}
-            OrderBy::Name => {
-                index_set.sort_by(|a, b| Ord::cmp(&a.file_name(), &b.file_name()))
-            }
+            OrderBy::Name => index_set.sort_by(|a, b| Ord::cmp(&a.file_name(), &b.file_name())),
             OrderBy::Size => {}
             OrderBy::Permission => {}
         }
@@ -114,8 +112,7 @@ mod tests {
     // other tests
     #[test]
     fn to_vec_test() {
-        let path_to_folder: &Path = Path::new("./test_files");
-        let file_vec = FileSet::new(path_to_folder).to_vec();
+        let file_vec = FileSet::new(PathBuf::from("./test_files")).to_vec();
         let directory_location = file_vec[0].parent().unwrap();
 
         assert_eq!(file_vec.len(), 9);
@@ -132,8 +129,7 @@ mod tests {
 
     #[test]
     fn visibility_filter_test() {
-        let path_to_folder: &Path = Path::new("./test_files");
-        let all_files = FileSet::new(path_to_folder);
+        let all_files = FileSet::new(PathBuf::from("./test_files"));
 
         let hidden_files = all_files
             .filter(Filter::Visibility(VisibilityFilter::Hidden))
@@ -160,8 +156,7 @@ mod tests {
 
     #[test]
     fn item_filter_test() {
-        let path_to_folder: &Path = Path::new("./test_files");
-        let all_files = FileSet::new(path_to_folder);
+        let all_files = FileSet::new(PathBuf::from("./test_files"));
         let directories = all_files
             .filter(Filter::Item(ItemFilter::Directory))
             .to_vec();
@@ -189,8 +184,7 @@ mod tests {
 
     #[test]
     fn exclude_test_1() {
-        let path_to_folder: &Path = Path::new("./test_files");
-        let all_items_but_symlinks = FileSet::new(path_to_folder)
+        let all_items_but_symlinks = FileSet::new(PathBuf::from("./test_files"))
             .exclude(Filter::Item(ItemFilter::Symlink))
             .to_vec();
         let directory_location = all_items_but_symlinks[0].parent().unwrap();
@@ -208,8 +202,7 @@ mod tests {
 
     #[test]
     fn exclude_test_2() {
-        let path_to_folder: &Path = Path::new("./test_files");
-        let all_visible_files = FileSet::new(path_to_folder)
+        let all_visible_files = FileSet::new(PathBuf::from("./test_files"))
             .exclude(Filter::Visibility(VisibilityFilter::Hidden))
             .to_vec();
         let directory_location = all_visible_files[0].parent().unwrap();
@@ -224,8 +217,7 @@ mod tests {
 
     #[test]
     fn order_by_extension_test() {
-        let path_to_folder: &Path = Path::new("./test_files");
-        let items_ordered_by_extension = FileSet::new(path_to_folder)
+        let items_ordered_by_extension = FileSet::new(PathBuf::from("./test_files"))
             .order_by(OrderBy::Extension)
             .to_vec();
 
@@ -259,8 +251,7 @@ mod tests {
 
     #[test]
     fn order_by_name_test() {
-        let path_to_folder: &Path = Path::new("./test_files");
-        let items_ordered_by_extension = FileSet::new(path_to_folder)
+        let items_ordered_by_extension = FileSet::new(PathBuf::from("./test_files"))
             .order_by(OrderBy::Name)
             .to_vec();
 
@@ -305,8 +296,7 @@ mod tests {
 
     #[test]
     fn reverse_test() {
-        let path_to_folder: &Path = Path::new("./test_files");
-        let items_ordered_by_extension = FileSet::new(path_to_folder)
+        let items_ordered_by_extension = FileSet::new(PathBuf::from("./test_files"))
             .order_by(OrderBy::Name)
             .reverse()
             .to_vec();

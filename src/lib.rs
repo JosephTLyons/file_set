@@ -71,40 +71,42 @@ impl FileSet {
             .collect::<IndexSet<PathBuf>>()
     }
 
-    // Try to refactor match arms like filter_by_item()
-    // Make each match arm a function, if necessary
-    // Is there a better way to handle combining the items other than union()?
     pub fn order_by(&self, order_by: OrderBy) -> FileSet {
-        let mut index_set: IndexSet<PathBuf>;
-
-        match order_by {
-            OrderBy::Extension | OrderBy::Name | OrderBy::Size => {
-                index_set = self.index_set.clone();
-
-                index_set.sort_by(|a, b| match order_by {
-                    OrderBy::Extension => Ord::cmp(&a.extension(), &b.extension()),
-                    OrderBy::Name => Ord::cmp(&a.file_name(), &b.file_name()),
-                    _ => {
-                        let get_file_size =
-                            |a: &Path| -> u64 { a.symlink_metadata().unwrap().len() };
-                        Ord::cmp(&get_file_size(&a), &get_file_size(&b))
-                    }
-                });
-            }
-            OrderBy::Item => {
-                let get_index_set_union = |a: &IndexSet<_>, b: &IndexSet<_>| -> IndexSet<PathBuf> {
-                    a.union(&b).cloned().collect::<IndexSet<PathBuf>>()
-                };
-                let directories = self.filter(Filter::Item(ItemFilter::Directory));
-                let files = self.filter(Filter::Item(ItemFilter::File));
-                let symlinks = self.filter(Filter::Item(ItemFilter::Symlink));
-
-                index_set = get_index_set_union(&directories.index_set, &files.index_set);
-                index_set = get_index_set_union(&index_set, &symlinks.index_set);
-            }
+        FileSet {
+            index_set: match order_by {
+                OrderBy::Item => self.order_by_item(),
+                _ => self.order_by_extension_name_size(order_by),
+            },
         }
+    }
 
-        FileSet { index_set }
+    fn order_by_item(&self) -> IndexSet<PathBuf> {
+        let get_index_set_union = |a: &IndexSet<_>, b: &IndexSet<_>| -> IndexSet<PathBuf> {
+            a.union(&b).cloned().collect::<IndexSet<PathBuf>>()
+        };
+        let directories = self.filter(Filter::Item(ItemFilter::Directory));
+        let files = self.filter(Filter::Item(ItemFilter::File));
+        let symlinks = self.filter(Filter::Item(ItemFilter::Symlink));
+
+        // Is there a better way to handle combining the items other than union()?
+        let index_set: IndexSet<PathBuf> =
+            get_index_set_union(&directories.index_set, &files.index_set);
+        get_index_set_union(&index_set, &symlinks.index_set)
+    }
+
+    fn order_by_extension_name_size(&self, order_by: OrderBy) -> IndexSet<PathBuf> {
+        let mut index_set: IndexSet<PathBuf> = self.index_set.clone();
+
+        index_set.sort_by(|a, b| match order_by {
+            OrderBy::Extension => Ord::cmp(&a.extension(), &b.extension()),
+            OrderBy::Name => Ord::cmp(&a.file_name(), &b.file_name()),
+            _ => {
+                let get_file_size = |a: &Path| -> u64 { a.symlink_metadata().unwrap().len() };
+                Ord::cmp(&get_file_size(&a), &get_file_size(&b))
+            }
+        });
+
+        index_set
     }
 
     pub fn reverse(&self) -> FileSet {

@@ -4,7 +4,9 @@ use std::path::{Path, PathBuf};
 use indexmap::IndexSet;
 
 mod enums;
-pub use enums::{Comparison, Filter, ItemFilter, OrderBy, SizeFilter, VisibilityFilter};
+pub use enums::{
+    Comparison, Filter, ItemFilter, OrderBy, SizeFilter, TextFilterBy, VisibilityFilter,
+};
 
 pub struct FileSet {
     index_set: IndexSet<PathBuf>,
@@ -35,8 +37,11 @@ impl FileSet {
     pub fn filter(&self, filter: Filter) -> FileSet {
         FileSet {
             index_set: match filter {
-                Filter::Item(item) => self.filter_by_item(item),
-                Filter::Visibility(visibility) => self.filter_by_visibility(visibility),
+                Filter::Item(item_filter) => self.filter_by_item(item_filter),
+                Filter::Text(text_filter_by, text) => self.filter_by_text(text_filter_by, text),
+                Filter::Visibility(visibility_filter) => {
+                    self.filter_by_visibility(visibility_filter)
+                }
             },
         }
     }
@@ -52,6 +57,25 @@ impl FileSet {
             .clone()
             .into_iter()
             .filter(|x: &PathBuf| file_type_function(&x.symlink_metadata().unwrap().file_type()))
+            .collect::<IndexSet<PathBuf>>()
+    }
+
+    fn filter_by_text(&self, text_filter_by: TextFilterBy, text: &'static str) -> IndexSet<PathBuf> {
+        let get_name_or_extension_function = match text_filter_by {
+            TextFilterBy::Extension => Path::extension,
+            TextFilterBy::Name => Path::file_name,
+        };
+
+        self.index_set
+            .iter()
+            .filter(|x| {
+                if let Some(name_or_extension) = get_name_or_extension_function(x) {
+                    name_or_extension.to_string_lossy().starts_with(text)
+                } else {
+                    false
+                }
+            })
+            .cloned()
             .collect::<IndexSet<PathBuf>>()
     }
 
@@ -81,9 +105,10 @@ impl FileSet {
     }
 
     fn order_by_item(&self) -> IndexSet<PathBuf> {
-        let get_index_set_union = |a: &IndexSet<_>, b: &IndexSet<_>| -> IndexSet<PathBuf> {
-            a.union(&b).cloned().collect::<IndexSet<PathBuf>>()
-        };
+        let get_index_set_union =
+            |a: &IndexSet<PathBuf>, b: &IndexSet<PathBuf>| -> IndexSet<PathBuf> {
+                a.union(&b).cloned().collect::<IndexSet<PathBuf>>()
+            };
         let directories = self.filter(Filter::Item(ItemFilter::Directory));
         let files = self.filter(Filter::Item(ItemFilter::File));
         let symlinks = self.filter(Filter::Item(ItemFilter::Symlink));
@@ -157,34 +182,7 @@ mod tests {
     }
 
     #[test]
-    fn visibility_filter_test() {
-        let all_files = FileSet::new(PathBuf::from("./test_files"));
-
-        let hidden_files = all_files
-            .filter(Filter::Visibility(VisibilityFilter::Hidden))
-            .to_vec();
-        let directory_location = hidden_files[0].parent().unwrap();
-
-        assert_eq!(hidden_files.len(), 4);
-        assert!(hidden_files.contains(&directory_location.join(".DS_Store")));
-        assert!(hidden_files.contains(&directory_location.join(".hidden_file_1.txt")));
-        assert!(hidden_files.contains(&directory_location.join(".hidden_file_2")));
-        assert!(hidden_files.contains(&directory_location.join(".symlink_to_gitkeep")));
-
-        let visible_files = all_files
-            .filter(Filter::Visibility(VisibilityFilter::Visible))
-            .to_vec();
-
-        assert_eq!(visible_files.len(), 5);
-        assert!(visible_files.contains(&directory_location.join("cat.doc")));
-        assert!(visible_files.contains(&directory_location.join("directory_1")));
-        assert!(visible_files.contains(&directory_location.join("directory_2")));
-        assert!(visible_files.contains(&directory_location.join("dog.txt")));
-        assert!(visible_files.contains(&directory_location.join("video.mov")));
-    }
-
-    #[test]
-    fn item_filter_test() {
+    fn filter_by_test() {
         let all_files = FileSet::new(PathBuf::from("./test_files"));
         let directories = all_files
             .filter(Filter::Item(ItemFilter::Directory))
@@ -209,6 +207,57 @@ mod tests {
 
         assert_eq!(symlinks.len(), 1);
         assert!(symlinks.contains(&directory_location.join(".symlink_to_gitkeep")));
+    }
+
+    #[test]
+    fn filter_by_text_name_test() {
+        let files_starting_with_dir_vec = FileSet::new(PathBuf::from("./test_files"))
+            .filter(Filter::Text(TextFilterBy::Name, "direct"))
+            .to_vec();
+
+        assert_eq!(files_starting_with_dir_vec.len(), 2);
+        assert!(files_starting_with_dir_vec[0].is_dir());
+        assert!(files_starting_with_dir_vec[1].is_dir());
+    }
+
+    #[test]
+    fn filter_by_text_extension_test() {
+        let files_starting_with_dir_vec = FileSet::new(PathBuf::from("./test_files"))
+            .filter(Filter::Text(TextFilterBy::Extension, "mov"))
+            .to_vec();
+
+        assert_eq!(files_starting_with_dir_vec.len(), 1);
+        assert_eq!(
+            files_starting_with_dir_vec[0].file_name().unwrap(),
+            "video.mov"
+        );
+    }
+
+    #[test]
+    fn filter_by_visibility_test() {
+        let all_files = FileSet::new(PathBuf::from("./test_files"));
+
+        let hidden_files = all_files
+            .filter(Filter::Visibility(VisibilityFilter::Hidden))
+            .to_vec();
+        let directory_location = hidden_files[0].parent().unwrap();
+
+        assert_eq!(hidden_files.len(), 4);
+        assert!(hidden_files.contains(&directory_location.join(".DS_Store")));
+        assert!(hidden_files.contains(&directory_location.join(".hidden_file_1.txt")));
+        assert!(hidden_files.contains(&directory_location.join(".hidden_file_2")));
+        assert!(hidden_files.contains(&directory_location.join(".symlink_to_gitkeep")));
+
+        let visible_files = all_files
+            .filter(Filter::Visibility(VisibilityFilter::Visible))
+            .to_vec();
+
+        assert_eq!(visible_files.len(), 5);
+        assert!(visible_files.contains(&directory_location.join("cat.doc")));
+        assert!(visible_files.contains(&directory_location.join("directory_1")));
+        assert!(visible_files.contains(&directory_location.join("directory_2")));
+        assert!(visible_files.contains(&directory_location.join("dog.txt")));
+        assert!(visible_files.contains(&directory_location.join("video.mov")));
     }
 
     #[test]

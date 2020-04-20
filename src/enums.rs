@@ -1,6 +1,7 @@
 pub enum Filter {
     Item(ItemFilter),
     // Size(SizeFilter),
+    Text(TextFilterBy, &'static str),
     Visibility(VisibilityFilter),
 }
 
@@ -16,6 +17,11 @@ pub enum SizeFilter {
     Megatbytes,
     Gigabytes,
     Terabytes,
+}
+
+pub enum TextFilterBy {
+    Extension,
+    Name,
 }
 
 pub enum VisibilityFilter {

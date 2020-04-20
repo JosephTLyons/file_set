@@ -60,7 +60,11 @@ impl FileSet {
             .collect::<IndexSet<PathBuf>>()
     }
 
-    fn filter_by_text(&self, text_filter_by: TextFilterBy, text: &'static str) -> IndexSet<PathBuf> {
+    fn filter_by_text(
+        &self,
+        text_filter_by: TextFilterBy,
+        text: &'static str,
+    ) -> IndexSet<PathBuf> {
         let get_name_or_extension_function = match text_filter_by {
             TextFilterBy::Extension => Path::extension,
             TextFilterBy::Name => Path::file_name,

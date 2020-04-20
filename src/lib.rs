@@ -78,9 +78,18 @@ impl FileSet {
         let mut index_set: IndexSet<PathBuf>;
 
         match order_by {
-            OrderBy::Extension => {
+            OrderBy::Extension | OrderBy::Name | OrderBy::Size => {
                 index_set = self.index_set.clone();
-                index_set.sort_by(|a, b| Ord::cmp(&a.extension(), &b.extension()))
+
+                index_set.sort_by(|a, b| match order_by {
+                    OrderBy::Extension => Ord::cmp(&a.extension(), &b.extension()),
+                    OrderBy::Name => Ord::cmp(&a.file_name(), &b.file_name()),
+                    _ => {
+                        let get_file_size =
+                            |a: &Path| -> u64 { a.symlink_metadata().unwrap().len() };
+                        Ord::cmp(&get_file_size(&a), &get_file_size(&b))
+                    }
+                });
             }
             OrderBy::Item => {
                 let get_index_set_union = |a: &IndexSet<_>, b: &IndexSet<_>| -> IndexSet<PathBuf> {
@@ -92,10 +101,6 @@ impl FileSet {
 
                 index_set = get_index_set_union(&directories.index_set, &files.index_set);
                 index_set = get_index_set_union(&index_set, &symlinks.index_set);
-            }
-            OrderBy::Name => {
-                index_set = self.index_set.clone();
-                index_set.sort_by(|a, b| Ord::cmp(&a.file_name(), &b.file_name()));
             }
         }
 

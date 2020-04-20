@@ -1,5 +1,5 @@
 use std::fs::{read_dir, FileType};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use indexmap::IndexSet;
 
@@ -75,29 +75,28 @@ impl FileSet {
     // Make each match arm a function, if necessary
     // Is there a better way to handle combining the items other than union()?
     pub fn order_by(&self, order_by: OrderBy) -> FileSet {
-        let mut index_set: IndexSet<PathBuf> = self.index_set.clone();
+        let mut index_set: IndexSet<PathBuf>;
 
         match order_by {
             OrderBy::Extension => {
+                index_set = self.index_set.clone();
                 index_set.sort_by(|a, b| Ord::cmp(&a.extension(), &b.extension()))
             }
             OrderBy::Item => {
+                let get_index_set_union = |a: &IndexSet<_>, b: &IndexSet<_>| -> IndexSet<PathBuf> {
+                    a.union(&b).cloned().collect::<IndexSet<PathBuf>>()
+                };
                 let directories = self.filter(Filter::Item(ItemFilter::Directory));
                 let files = self.filter(Filter::Item(ItemFilter::File));
                 let symlinks = self.filter(Filter::Item(ItemFilter::Symlink));
 
-                index_set = directories
-                    .index_set
-                    .union(&files.index_set)
-                    .cloned()
-                    .collect::<IndexSet<PathBuf>>();
-                index_set = index_set
-                    .union(&symlinks.index_set)
-                    .cloned()
-                    .collect::<IndexSet<PathBuf>>();
+                index_set = get_index_set_union(&directories.index_set, &files.index_set);
+                index_set = get_index_set_union(&index_set, &symlinks.index_set);
             }
-            OrderBy::Name => index_set.sort_by(|a, b| Ord::cmp(&a.file_name(), &b.file_name())),
-            OrderBy::Size => {}
+            OrderBy::Name => {
+                index_set = self.index_set.clone();
+                index_set.sort_by(|a, b| Ord::cmp(&a.file_name(), &b.file_name()));
+            }
         }
 
         FileSet { index_set }

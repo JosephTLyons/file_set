@@ -139,7 +139,11 @@ impl FileSet {
             OrderBy::Extension => Ord::cmp(&a.extension(), &b.extension()),
             OrderBy::Name => Ord::cmp(&a.file_name(), &b.file_name()),
             _ => {
-                let get_file_size = |a: &Path| -> u64 { a.symlink_metadata().unwrap().len() };
+                let get_file_size = |a: &Path| -> u64 {
+                    a.symlink_metadata()
+                        .map(|metadata| metadata.len())
+                        .unwrap_or(0)
+                };
                 Ord::cmp(&get_file_size(&a), &get_file_size(&b))
             }
         });

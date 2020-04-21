@@ -47,7 +47,7 @@ impl FileSet {
     }
 
     fn filter_by_item(&self, item_filter: ItemFilter) -> IndexSet<PathBuf> {
-        let file_type_function = match item_filter {
+        let is_file_type_function = match item_filter {
             ItemFilter::Directory => FileType::is_dir,
             ItemFilter::File => FileType::is_file,
             ItemFilter::Symlink => FileType::is_symlink,
@@ -56,7 +56,12 @@ impl FileSet {
         self.index_set
             .clone()
             .into_iter()
-            .filter(|x: &PathBuf| file_type_function(&x.symlink_metadata().unwrap().file_type()))
+            .filter(|path_buf: &PathBuf| {
+                path_buf
+                    .symlink_metadata()
+                    .map(|metadata| is_file_type_function(&metadata.file_type()))
+                    .unwrap_or(false)
+            })
             .collect::<IndexSet<PathBuf>>()
     }
 

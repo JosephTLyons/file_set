@@ -77,12 +77,10 @@ impl FileSet {
 
         self.index_set
             .iter()
-            .filter(|x| {
-                if let Some(name_or_extension) = get_name_or_extension_function(x) {
-                    name_or_extension.to_string_lossy().starts_with(text)
-                } else {
-                    false
-                }
+            .filter(|path_buf: &&PathBuf| {
+                get_name_or_extension_function(path_buf)
+                    .map(|name_or_extension| name_or_extension.to_string_lossy().starts_with(text))
+                    .unwrap_or(false)
             })
             .cloned()
             .collect::<IndexSet<PathBuf>>()

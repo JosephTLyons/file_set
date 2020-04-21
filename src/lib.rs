@@ -1,4 +1,4 @@
-use std::fs::{read_dir, FileType};
+use std::fs::{read_dir, FileType, Metadata};
 use std::path::{Path, PathBuf};
 
 use indexmap::IndexSet;
@@ -59,7 +59,9 @@ impl FileSet {
             .filter(|path_buf: &PathBuf| {
                 path_buf
                     .symlink_metadata()
-                    .map(|metadata| is_file_type_function(&metadata.file_type()))
+                    .map(|symlink_metadata: Metadata| {
+                        is_file_type_function(&symlink_metadata.file_type())
+                    })
                     .unwrap_or(false)
             })
             .collect::<IndexSet<PathBuf>>()
@@ -138,9 +140,9 @@ impl FileSet {
             OrderBy::Extension => Ord::cmp(&a.extension(), &b.extension()),
             OrderBy::Name => Ord::cmp(&a.file_name(), &b.file_name()),
             _ => {
-                let get_file_size = |a: &Path| -> u64 {
-                    a.symlink_metadata()
-                        .map(|metadata| metadata.len())
+                let get_file_size = |path: &Path| -> u64 {
+                    path.symlink_metadata()
+                        .map(|symlink_metadata: Metadata| symlink_metadata.len())
                         .unwrap_or(0)
                 };
                 Ord::cmp(&get_file_size(&a), &get_file_size(&b))

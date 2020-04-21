@@ -114,18 +114,20 @@ impl FileSet {
     }
 
     fn order_by_item(&self) -> IndexSet<PathBuf> {
-        let get_index_set_union =
-            |a: &IndexSet<PathBuf>, b: &IndexSet<PathBuf>| -> IndexSet<PathBuf> {
-                a.union(&b).cloned().collect::<IndexSet<PathBuf>>()
-            };
         let directories = self.filter(Filter::Item(ItemFilter::Directory));
         let files = self.filter(Filter::Item(ItemFilter::File));
         let symlinks = self.filter(Filter::Item(ItemFilter::Symlink));
 
-        // Is there a better way to handle combining the items other than union()?
-        let index_set: IndexSet<PathBuf> =
-            get_index_set_union(&directories.index_set, &files.index_set);
-        get_index_set_union(&index_set, &symlinks.index_set)
+        let get_index_set_union =
+            |a: &IndexSet<PathBuf>, b: &IndexSet<PathBuf>| -> IndexSet<PathBuf> {
+                a.union(&b).cloned().collect::<IndexSet<PathBuf>>()
+            };
+
+        // Is there a better way to handle combining the items other using union operations?
+        get_index_set_union(
+            &get_index_set_union(&directories.index_set, &files.index_set),
+            &symlinks.index_set,
+        )
     }
 
     fn order_by_extension_name_size(&self, order_by: OrderBy) -> IndexSet<PathBuf> {

@@ -125,7 +125,6 @@ impl FileSet {
                 a.union(&b).cloned().collect::<IndexSet<PathBuf>>()
             };
 
-        // Is there a better way to handle combining the items other using union operations?
         get_index_set_union(
             &get_index_set_union(&directories.index_set, &files.index_set),
             &symlinks.index_set,
@@ -179,8 +178,6 @@ impl FileSet {
 mod tests {
     use super::*;
 
-    // It is possible this test can be deleted, since to_vec() is being tested implicitly in the
-    // other tests
     #[test]
     fn to_vec_test() {
         let file_vec = FileSet::new(PathBuf::from("./test_files")).to_vec();

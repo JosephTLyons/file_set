@@ -95,14 +95,13 @@ impl FileSet {
         self.index_set
             .clone()
             .into_iter()
-            .filter(|x| {
-                if let Some(file_name) = x.file_name() {
-                    should_find_visible_files != file_name.to_string_lossy().starts_with('.')
-                } else {
-                    // At this point, there is no name and extension or something is wrong with the
-                    // file, skip it
-                    false
-                }
+            .filter(|path_buf: &PathBuf| {
+                path_buf
+                    .file_name()
+                    .map(|file_name| {
+                        should_find_visible_files != file_name.to_string_lossy().starts_with('.')
+                    })
+                    .unwrap_or(false)
             })
             .collect::<IndexSet<PathBuf>>()
     }

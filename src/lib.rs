@@ -152,7 +152,8 @@ impl FileSet {
                 OrderBy::Name => Ord::cmp(&item_path_a.file_name(), &item_path_b.file_name()),
                 _ => {
                     let get_file_size = |item_path: &Path| -> u64 {
-                        item_path.symlink_metadata()
+                        item_path
+                            .symlink_metadata()
                             .map(|symlink_metadata: Metadata| symlink_metadata.len())
                             .unwrap_or(0)
                     };

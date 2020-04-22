@@ -17,15 +17,16 @@ pub struct FileSet {
 }
 
 impl FileSet {
-    pub fn new(directory_path: PathBuf) -> FileSet {
-        FileSet {
-            index_set: read_dir(&directory_path)
-                .unwrap()
+    pub fn new(directory_path: PathBuf) -> Result<FileSet, Error> {
+        Ok(FileSet {
+            index_set: read_dir(&directory_path)?
                 .filter_map(|dir_entry_result: Result<DirEntry, Error>| {
-                    dir_entry_result.ok().map(|dir_entry: DirEntry| dir_entry.path())
+                    dir_entry_result
+                        .ok()
+                        .map(|dir_entry: DirEntry| dir_entry.path())
                 })
                 .collect::<IndexSet<PathBuf>>(),
-        }
+        })
     }
 
     pub fn exclude(&self, filter: Filter) -> FileSet {
@@ -201,7 +202,9 @@ mod tests {
 
     #[test]
     fn to_vec_test() {
-        let file_vec = FileSet::new(PathBuf::from("./test_files")).to_vec();
+        let file_vec = FileSet::new(PathBuf::from("./test_files"))
+            .unwrap()
+            .to_vec();
         let directory_location = file_vec[0].parent().unwrap();
 
         assert_eq!(file_vec.len(), 9);
@@ -218,7 +221,7 @@ mod tests {
 
     #[test]
     fn filter_by_test() {
-        let all_files = FileSet::new(PathBuf::from("./test_files"));
+        let all_files = FileSet::new(PathBuf::from("./test_files")).unwrap();
         let directories = all_files
             .filter(Filter::Item(ItemFilter::Directory))
             .to_vec();
@@ -247,6 +250,7 @@ mod tests {
     #[test]
     fn filter_by_text_name_test() {
         let files_starting_with_dir_vec = FileSet::new(PathBuf::from("./test_files"))
+            .unwrap()
             .filter(Filter::Text(TextFilterBy::Name, "direct"))
             .to_vec();
 
@@ -258,6 +262,7 @@ mod tests {
     #[test]
     fn filter_by_text_extension_test() {
         let files_starting_with_dir_vec = FileSet::new(PathBuf::from("./test_files"))
+            .unwrap()
             .filter(Filter::Text(TextFilterBy::Extension, "mov"))
             .to_vec();
 
@@ -270,7 +275,7 @@ mod tests {
 
     #[test]
     fn filter_by_visibility_test() {
-        let all_files = FileSet::new(PathBuf::from("./test_files"));
+        let all_files = FileSet::new(PathBuf::from("./test_files")).unwrap();
 
         let hidden_files = all_files
             .filter(Filter::Visibility(VisibilityFilter::Hidden))
@@ -298,6 +303,7 @@ mod tests {
     #[test]
     fn exclude_test_1() {
         let all_items_but_symlinks = FileSet::new(PathBuf::from("./test_files"))
+            .unwrap()
             .exclude(Filter::Item(ItemFilter::Symlink))
             .to_vec();
         let directory_location = all_items_but_symlinks[0].parent().unwrap();
@@ -316,6 +322,7 @@ mod tests {
     #[test]
     fn exclude_test_2() {
         let all_visible_files = FileSet::new(PathBuf::from("./test_files"))
+            .unwrap()
             .exclude(Filter::Visibility(VisibilityFilter::Hidden))
             .to_vec();
         let directory_location = all_visible_files[0].parent().unwrap();
@@ -331,6 +338,7 @@ mod tests {
     #[test]
     fn order_by_extension_test() {
         let items_ordered_by_extension = FileSet::new(PathBuf::from("./test_files"))
+            .unwrap()
             .order_by(OrderBy::Extension)
             .to_vec();
 
@@ -365,6 +373,7 @@ mod tests {
     #[test]
     fn order_by_item_test() {
         let items_ordered_by_extension = FileSet::new(PathBuf::from("./test_files"))
+            .unwrap()
             .order_by(OrderBy::Item)
             .to_vec();
 
@@ -387,6 +396,7 @@ mod tests {
     #[test]
     fn order_by_name_test() {
         let items_ordered_by_extension = FileSet::new(PathBuf::from("./test_files"))
+            .unwrap()
             .order_by(OrderBy::Name)
             .to_vec();
 
@@ -432,6 +442,7 @@ mod tests {
     #[test]
     fn reverse_test() {
         let items_ordered_by_extension = FileSet::new(PathBuf::from("./test_files"))
+            .unwrap()
             .order_by(OrderBy::Name)
             .reverse()
             .to_vec();
@@ -477,13 +488,14 @@ mod tests {
 
     #[test]
     fn len_test() {
-        let items = FileSet::new(PathBuf::from("./test_files"));
+        let items = FileSet::new(PathBuf::from("./test_files")).unwrap();
         assert_eq!(items.len(), 9);
     }
 
     #[test]
     fn is_empty_test() {
         let no_items = FileSet::new(PathBuf::from("./test_files"))
+            .unwrap()
             .filter(Filter::Visibility(VisibilityFilter::Hidden))
             .filter(Filter::Item(ItemFilter::Directory));
 

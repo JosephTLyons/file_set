@@ -17,9 +17,9 @@ pub struct FileSet {
 }
 
 impl FileSet {
-    pub fn new(directory: PathBuf) -> FileSet {
+    pub fn new(directory_path: PathBuf) -> FileSet {
         FileSet {
-            index_set: read_dir(&directory)
+            index_set: read_dir(&directory_path)
                 .unwrap()
                 .map(|dir_entry_result: Result<DirEntry, Error>| dir_entry_result.unwrap().path())
                 .collect::<IndexSet<PathBuf>>(),

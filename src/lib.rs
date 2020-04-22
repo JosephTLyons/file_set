@@ -1,4 +1,6 @@
-use std::fs::{read_dir, FileType, Metadata};
+use std::ffi::OsStr;
+use std::fs::{read_dir, DirEntry, FileType, Metadata};
+use std::io::Error;
 use std::path::{Path, PathBuf};
 
 use indexmap::IndexSet;
@@ -17,7 +19,7 @@ impl FileSet {
         FileSet {
             index_set: read_dir(&directory)
                 .unwrap()
-                .map(|x| x.unwrap().path())
+                .map(|dir_entry_result: Result<DirEntry, Error>| dir_entry_result.unwrap().path())
                 .collect::<IndexSet<PathBuf>>(),
         }
     }
@@ -56,8 +58,8 @@ impl FileSet {
         self.index_set
             .clone()
             .into_iter()
-            .filter(|path_buf: &PathBuf| {
-                path_buf
+            .filter(|item_path: &PathBuf| {
+                item_path
                     .symlink_metadata()
                     .map(|symlink_metadata: Metadata| {
                         is_file_type_function(&symlink_metadata.file_type())
@@ -79,9 +81,11 @@ impl FileSet {
 
         self.index_set
             .iter()
-            .filter(|path_buf: &&PathBuf| {
-                get_name_or_extension_function(path_buf)
-                    .map(|name_or_extension| name_or_extension.to_string_lossy().starts_with(text))
+            .filter(|name_or_extension: &&PathBuf| {
+                get_name_or_extension_function(name_or_extension)
+                    .map(|name_or_extension: &OsStr| {
+                        name_or_extension.to_string_lossy().starts_with(text)
+                    })
                     .unwrap_or(false)
             })
             .cloned()
@@ -97,10 +101,10 @@ impl FileSet {
         self.index_set
             .clone()
             .into_iter()
-            .filter(|path_buf: &PathBuf| {
-                path_buf
+            .filter(|item_path: &PathBuf| {
+                item_path
                     .file_name()
-                    .map(|file_name| {
+                    .map(|file_name: &OsStr| {
                         should_find_visible_files != file_name.to_string_lossy().starts_with('.')
                     })
                     .unwrap_or(false)
@@ -122,10 +126,14 @@ impl FileSet {
         let files = self.filter(Filter::Item(ItemFilter::File));
         let symlinks = self.filter(Filter::Item(ItemFilter::Symlink));
 
-        let get_index_set_union =
-            |a: &IndexSet<PathBuf>, b: &IndexSet<PathBuf>| -> IndexSet<PathBuf> {
-                a.union(&b).cloned().collect::<IndexSet<PathBuf>>()
-            };
+        let get_index_set_union = |index_set_a: &IndexSet<PathBuf>,
+                                   index_set_b: &IndexSet<PathBuf>|
+         -> IndexSet<PathBuf> {
+            index_set_a
+                .union(&index_set_b)
+                .cloned()
+                .collect::<IndexSet<PathBuf>>()
+        };
 
         get_index_set_union(
             &get_index_set_union(&directories.index_set, &files.index_set),
@@ -136,18 +144,20 @@ impl FileSet {
     fn order_by_extension_name_size(&self, order_by: OrderBy) -> IndexSet<PathBuf> {
         let mut index_set: IndexSet<PathBuf> = self.index_set.clone();
 
-        index_set.sort_by(|a, b| match order_by {
-            OrderBy::Extension => Ord::cmp(&a.extension(), &b.extension()),
-            OrderBy::Name => Ord::cmp(&a.file_name(), &b.file_name()),
-            _ => {
-                let get_file_size = |path: &Path| -> u64 {
-                    path.symlink_metadata()
-                        .map(|symlink_metadata: Metadata| symlink_metadata.len())
-                        .unwrap_or(0)
-                };
-                Ord::cmp(&get_file_size(&a), &get_file_size(&b))
-            }
-        });
+        index_set.sort_by(
+            |item_path_a: &PathBuf, item_path_b: &PathBuf| match order_by {
+                OrderBy::Extension => Ord::cmp(&item_path_a.extension(), &item_path_b.extension()),
+                OrderBy::Name => Ord::cmp(&item_path_a.file_name(), &item_path_b.file_name()),
+                _ => {
+                    let get_file_size = |item_path: &Path| -> u64 {
+                        item_path.symlink_metadata()
+                            .map(|symlink_metadata: Metadata| symlink_metadata.len())
+                            .unwrap_or(0)
+                    };
+                    Ord::cmp(&get_file_size(&item_path_a), &get_file_size(&item_path_b))
+                }
+            },
+        );
 
         index_set
     }
@@ -164,7 +174,11 @@ impl FileSet {
     }
 
     pub fn to_vec(&self) -> Vec<PathBuf> {
-        self.index_set.clone().into_iter().map(|x| x).collect()
+        self.index_set
+            .clone()
+            .into_iter()
+            .map(|item_path: PathBuf| item_path)
+            .collect()
     }
 
     pub fn len(&self) -> usize {

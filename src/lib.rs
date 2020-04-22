@@ -21,7 +21,9 @@ impl FileSet {
         FileSet {
             index_set: read_dir(&directory_path)
                 .unwrap()
-                .map(|dir_entry_result: Result<DirEntry, Error>| dir_entry_result.unwrap().path())
+                .filter_map(|dir_entry_result: Result<DirEntry, Error>| {
+                    dir_entry_result.ok().map(|dir_entry: DirEntry| dir_entry.path())
+                })
                 .collect::<IndexSet<PathBuf>>(),
         }
     }

@@ -1,7 +1,9 @@
-use std::ffi::OsStr;
-use std::fs::{read_dir, DirEntry, FileType, Metadata};
-use std::io::Error;
-use std::path::{Path, PathBuf};
+use std::{
+    ffi::OsStr,
+    fs::{read_dir, DirEntry, FileType, Metadata},
+    io::Error,
+    path::{Path, PathBuf},
+};
 
 use indexmap::IndexSet;
 

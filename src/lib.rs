@@ -343,11 +343,13 @@ mod tests {
             .to_vec();
 
         assert_eq!(items_ordered_by_extension.len(), 9);
-        assert!(items_ordered_by_extension[0].extension().is_none());
-        assert!(items_ordered_by_extension[1].extension().is_none());
-        assert!(items_ordered_by_extension[2].extension().is_none());
-        assert!(items_ordered_by_extension[3].extension().is_none());
-        assert!(items_ordered_by_extension[4].extension().is_none());
+
+        for (index, item) in items_ordered_by_extension.iter().enumerate().take(5) {
+            if index < 5 {
+                assert!(item.extension().is_none());
+            }
+        }
+
         assert!(items_ordered_by_extension[5]
             .extension()
             .unwrap()

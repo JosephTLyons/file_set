@@ -378,14 +378,17 @@ mod tests {
             .to_vec();
 
         assert_eq!(items_ordered_by_extension.len(), 9);
-        assert!(items_ordered_by_extension[0].is_dir());
-        assert!(items_ordered_by_extension[1].is_dir());
-        assert!(items_ordered_by_extension[2].is_file());
-        assert!(items_ordered_by_extension[3].is_file());
-        assert!(items_ordered_by_extension[4].is_file());
-        assert!(items_ordered_by_extension[5].is_file());
-        assert!(items_ordered_by_extension[6].is_file());
-        assert!(items_ordered_by_extension[7].is_file());
+
+        for (index, item) in items_ordered_by_extension.iter().enumerate().take(8) {
+            let is_item_type: bool = if index < 2 {
+                item.is_dir()
+            } else {
+                item.is_file()
+            };
+
+            assert!(is_item_type);
+        }
+
         assert!(items_ordered_by_extension[8]
             .symlink_metadata()
             .unwrap()
@@ -395,95 +398,16 @@ mod tests {
 
     #[test]
     fn order_by_name_test() {
-        let items_ordered_by_extension = FileSet::new(PathBuf::from("./test_files"))
-            .unwrap()
-            .order_by(OrderBy::Name)
-            .to_vec();
-
-        assert_eq!(items_ordered_by_extension.len(), 9);
-        assert_eq!(
-            items_ordered_by_extension[0].file_name().unwrap(),
-            ".DS_Store"
-        );
-        assert_eq!(
-            items_ordered_by_extension[1].file_name().unwrap(),
-            ".hidden_file_1.txt"
-        );
-        assert_eq!(
-            items_ordered_by_extension[2].file_name().unwrap(),
-            ".hidden_file_2"
-        );
-        assert_eq!(
-            items_ordered_by_extension[3].file_name().unwrap(),
-            ".symlink_to_gitkeep"
-        );
-        assert_eq!(
-            items_ordered_by_extension[4].file_name().unwrap(),
-            "cat.doc"
-        );
-        assert_eq!(
-            items_ordered_by_extension[5].file_name().unwrap(),
-            "directory_1"
-        );
-        assert_eq!(
-            items_ordered_by_extension[6].file_name().unwrap(),
-            "directory_2"
-        );
-        assert_eq!(
-            items_ordered_by_extension[7].file_name().unwrap(),
-            "dog.txt"
-        );
-        assert_eq!(
-            items_ordered_by_extension[8].file_name().unwrap(),
-            "video.mov"
-        );
+        let file_names_alphabetical: Vec<&str> = get_file_name_vec_alphabetical();
+        order_by_name_base_test(&file_names_alphabetical, false);
     }
 
     #[test]
-    fn reverse_test() {
-        let items_ordered_by_extension = FileSet::new(PathBuf::from("./test_files"))
-            .unwrap()
-            .order_by(OrderBy::Name)
-            .reverse()
-            .to_vec();
-
-        assert_eq!(items_ordered_by_extension.len(), 9);
-        assert_eq!(
-            items_ordered_by_extension[0].file_name().unwrap(),
-            "video.mov"
-        );
-        assert_eq!(
-            items_ordered_by_extension[1].file_name().unwrap(),
-            "dog.txt"
-        );
-        assert_eq!(
-            items_ordered_by_extension[2].file_name().unwrap(),
-            "directory_2"
-        );
-        assert_eq!(
-            items_ordered_by_extension[3].file_name().unwrap(),
-            "directory_1"
-        );
-        assert_eq!(
-            items_ordered_by_extension[4].file_name().unwrap(),
-            "cat.doc"
-        );
-        assert_eq!(
-            items_ordered_by_extension[5].file_name().unwrap(),
-            ".symlink_to_gitkeep"
-        );
-        assert_eq!(
-            items_ordered_by_extension[6].file_name().unwrap(),
-            ".hidden_file_2"
-        );
-        assert_eq!(
-            items_ordered_by_extension[7].file_name().unwrap(),
-            ".hidden_file_1.txt"
-        );
-        assert_eq!(
-            items_ordered_by_extension[8].file_name().unwrap(),
-            ".DS_Store"
-        );
+    fn order_by_name_reverse_test() {
+        let file_names_alphabetical: Vec<&str> = get_file_name_vec_alphabetical();
+        let file_names_alphabetical_reversed: Vec<&str> =
+            file_names_alphabetical.into_iter().rev().collect();
+        order_by_name_base_test(&file_names_alphabetical_reversed, true);
     }
 
     #[test]
@@ -500,5 +424,44 @@ mod tests {
             .filter(Filter::Item(ItemFilter::Directory));
 
         assert!(no_items.is_empty());
+    }
+
+    // Test helper methods
+    fn get_file_name_vec_alphabetical() -> Vec<&'static str> {
+        let file_names: Vec<&str> = vec![
+            ".DS_Store",
+            ".hidden_file_1.txt",
+            ".hidden_file_2",
+            ".symlink_to_gitkeep",
+            "cat.doc",
+            "directory_1",
+            "directory_2",
+            "dog.txt",
+            "video.mov",
+        ];
+
+        file_names
+    }
+
+    fn order_by_name_base_test(file_names_vec: &[&str], should_reverse_file_set: bool) {
+        let mut items_ordered_by_extension_file_set = FileSet::new(PathBuf::from("./test_files"))
+            .unwrap()
+            .order_by(OrderBy::Name);
+
+        if should_reverse_file_set {
+            items_ordered_by_extension_file_set = items_ordered_by_extension_file_set.reverse()
+        }
+
+        let items_ordered_by_extension_vec = items_ordered_by_extension_file_set.to_vec();
+
+        assert_eq!(items_ordered_by_extension_vec.len(), file_names_vec.len());
+
+        for (index, item) in items_ordered_by_extension_vec.iter().enumerate() {
+            assert_eq!(get_file_name_from_path_buf(item), file_names_vec[index])
+        }
+    }
+
+    fn get_file_name_from_path_buf(path_buf: &PathBuf) -> String {
+        path_buf.file_name().unwrap().to_string_lossy().to_string()
     }
 }
